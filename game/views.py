@@ -1,6 +1,14 @@
 from django.shortcuts import render
 
 
+def packs(request):
+    return render(request, 'game/packs.html')
+
+
+def leaders(request):
+    return render(request, 'game/leaders.html')
+
+
 def index(request):
     inventory_cards = [
         {'name': 'Шериф',     'icon': '⭐', 'value': '2.4', 'rarity': 'legendary', 'description': 'Страж закона в тёмном городе. Ведёт тайное следствие.'},
@@ -25,4 +33,5 @@ def index(request):
     return render(request, 'game/index.html', {
         'inventory_cards': inventory_cards,
         'active_slots': active_slots,
+        'hammer_count': 5,
     })

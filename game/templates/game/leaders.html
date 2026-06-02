@@ -1,0 +1,17 @@
+{% extends 'game/base.html' %}
+{% load static %}
+
+{% block title %}Лидеры — Мафия{% endblock %}
+
+{% block nav_leaders %}active{% endblock %}
+
+{% block page_css %}
+    <link rel="stylesheet" href="{% static 'game/css/pages.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="page-placeholder">
+        <h1 class="page-placeholder-title">Лидеры</h1>
+        <span class="page-placeholder-text">Скоро здесь появится таблица лидеров</span>
+    </div>
+{% endblock %}

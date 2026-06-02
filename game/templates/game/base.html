@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Мафия{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'game/css/base.css' %}">
+    {% block page_css %}{% endblock %}
+    <style>
+        :root {
+            --bg-image: url("{% static 'game/img/bg.png' %}");
+        }
+    </style>
+</head>
+<body>
+    <div class="orientation-lock">
+        <span class="orientation-lock-icon">📱</span>
+        <span class="orientation-lock-text">Пожалуйста, поверните телефон вертикально</span>
+    </div>
+
+    <div class="app">
+
+        {% block content %}{% endblock %}
+
+        <nav class="bottom-nav">
+            <a class="nav-btn {% block nav_packs %}{% endblock %}" href="{% url 'packs' %}">
+                <img src="{% static 'game/img/button/btn-packs.png' %}" alt="Паки">
+            </a>
+            <a class="nav-btn {% block nav_collection %}{% endblock %}" href="{% url 'index' %}">
+                <img src="{% static 'game/img/button/btn-collection.png' %}" alt="Коллекция">
+            </a>
+            <a class="nav-btn {% block nav_leaders %}{% endblock %}" href="{% url 'leaders' %}">
+                <img src="{% static 'game/img/button/btn-leaders.png' %}" alt="Лидеры">
+            </a>
+        </nav>
+
+        <img class="bg-frame-overlay" src="{% static 'game/img/bg-frame.png' %}" alt="">
+    </div>
+
+    <script src="{% static 'game/js/base.js' %}"></script>
+    {% block page_js %}{% endblock %}
+</body>
+</html>
