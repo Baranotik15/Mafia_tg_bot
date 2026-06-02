@@ -197,6 +197,7 @@
     min-height: 0;
     overflow-y: auto;
     padding-bottom: 8px;
+    touch-action: pan-y;
 }
 
 .inv-grid {
@@ -221,7 +222,9 @@
     -webkit-user-select: none;
 }
 
-.inv-card:hover { transform: translateY(-4px); }
+@media (hover: hover) {
+    .inv-card:hover { transform: translateY(-4px); }
+}
 
 .inv-card-img {
     width: 100%;

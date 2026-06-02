@@ -44,7 +44,7 @@
     <div class="block-cards">
         <div class="inv-grid">
             {% for card in inventory_cards %}
-            <div class="inv-card" draggable="true">
+            <div class="inv-card">
                 {% if forloop.counter|divisibleby:2 %}
                 <img class="inv-card-img" src="{% static 'game/img/card-sample2.png' %}" alt="{{ card.name }}">
                 {% else %}
