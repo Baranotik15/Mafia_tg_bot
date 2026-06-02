@@ -267,3 +267,13 @@
 }
 
 .slot-wrap.rejecting .card-slot { animation: slot-reject 0.4s ease-out forwards; }
+
+@keyframes press-charge {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    60%  { transform: scale(0.94); filter: brightness(1.1); }
+    100% { transform: scale(0.91); filter: brightness(1.4) drop-shadow(0 0 10px rgba(201,162,39,0.9)); }
+}
+
+.inv-card.press-charging {
+    animation: press-charge 1.5s ease-in forwards;
+}
