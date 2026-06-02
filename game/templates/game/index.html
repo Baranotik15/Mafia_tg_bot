@@ -24,22 +24,33 @@
             background: url("{% static 'game/img/bg.png' %}") center / 100% 100% no-repeat;
             display: flex;
             flex-direction: column;
-            /* отступы внутри рамки */
+            position: relative;
             padding: 12px 28px 0 28px;
+        }
+
+        .bg-frame-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 9999;
+            pointer-events: none;
         }
 
         /* ── Блок 1: Шапка ── */
         .block-header {
             flex-shrink: 0;
-            height: 80px;
+            height: 60px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            padding-top: 4px;
         }
 
         .page-title {
             font-family: 'Palatino Linotype', Palatino, Georgia, serif;
-            font-size: 44px;
+            font-size: 38px;
             font-weight: 900;
             color: #d4a84b;
             text-shadow:
@@ -57,11 +68,12 @@
             justify-content: center;
             gap: 8px;
             padding: 8px 14px;
+            isolation: isolate;
         }
 
         .card-slot {
-            flex: 1;
-            height: 100%;
+            width: 100%;
+            aspect-ratio: 3 / 4;
             border: 2px solid #c9a227;
             border-radius: 8px;
             background: rgba(10, 15, 25, 0.6);
@@ -69,6 +81,14 @@
                 0 0 0 1px rgba(201,162,39,0.15),
                 inset 0 0 12px rgba(0,0,0,0.5);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .card-slot::before {
@@ -90,62 +110,107 @@
             text-shadow: 0 0 8px rgba(201,162,39,0.7);
         }
 
-        /* Первый слот — бронзовая рамка */
-        .card-slot:first-child {
-            border: none;
-            box-shadow: none;
-            background: url("{% static 'game/img/frames/frame-bronze.png' %}") center / 100% 100% no-repeat;
+
+        .slot-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
-        .card-slot:first-child::before { display: none; }
-        .card-slot:first-child::after  { display: none; }
-
-        /* Центральный слот — серебряная рамка */
-        .card-slot:nth-child(2) {
-            border: none;
-            box-shadow: none;
-            background: url("{% static 'game/img/frames/frame-silver.png' %}") center / 100% 100% no-repeat;
+        .slot-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 2;
+            pointer-events: none;
         }
 
-        .card-slot:nth-child(2)::before { display: none; }
-        .card-slot:nth-child(2)::after  { display: none; }
-
-        /* Последний слот — рамка из изображения */
-        .card-slot:last-child {
+        /* Слоты с рамками-изображениями */
+        .card-slot--bronze,
+        .card-slot--silver,
+        .card-slot--gold {
             border: none;
             box-shadow: none;
-            background: url("{% static 'game/img/frames/frame-gold.png' %}") center / 100% 100% no-repeat;
+            background: none;
+            padding: 0;
+            overflow: hidden;
         }
 
-        .card-slot:last-child::before { display: none; }
-        .card-slot:last-child::after  { display: none; }
+        .card-slot--bronze::before,
+        .card-slot--silver::before,
+        .card-slot--gold::before,
+        .card-slot--bronze::after,
+        .card-slot--silver::after,
+        .card-slot--gold::after { display: none; }
+
+        .slot-wrap {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .slot-num {
+            font-family: 'Palatino Linotype', Georgia, serif;
+            font-size: 13px;
+            font-weight: bold;
+            color: #d4a84b;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            white-space: nowrap;
+        }
 
         .slot-btn-wrap {
             display: flex;
             justify-content: center;
             margin-top: 14px;
             margin-bottom: -8px;
+            isolation: isolate;
+        }
+
+        @keyframes hammer-swing {
+            0%   { transform: scale(1.1) rotate(0deg); }
+            25%  { transform: scale(1.1) rotate(-30deg); }
+            55%  { transform: scale(1.1) rotate(15deg); }
+            75%  { transform: scale(1.1) rotate(-8deg); }
+            100% { transform: scale(1.1) rotate(0deg); }
         }
 
         .round-btn {
-            width: 44px;
-            height: 44px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            border: 2px solid #c9a227;
-            background: linear-gradient(180deg, #2a2010 0%, #1a1008 100%);
-            color: #f0d060;
-            font-size: 24px;
+            border: none;
+            outline: none;
+            background: url("{% static 'game/img/hummer.png' %}") center / cover no-repeat;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px rgba(201,162,39,0.4), inset 0 1px 0 rgba(255,220,100,0.1);
-            transition: box-shadow 0.18s, transform 0.15s;
+            transition: filter 0.15s;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.7));
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         .round-btn:hover {
-            box-shadow: 0 0 18px rgba(201,162,39,0.7);
-            transform: scale(1.08);
+            animation: hammer-swing 0.45s ease-out forwards;
+            filter: drop-shadow(0 0 14px rgba(201,162,39,0.8)) drop-shadow(0 0 4px rgba(255,200,60,0.5));
+        }
+
+        .round-btn:active {
+            animation: none;
+            transform: scale(0.92) rotate(20deg);
+            filter: drop-shadow(0 0 6px rgba(201,162,39,0.4));
+            transition: transform 0.08s, filter 0.08s;
         }
 
         /* ── Разделитель ── */
@@ -173,6 +238,8 @@
             justify-content: space-around;
             padding: 0 0 6px 0;
             margin: 0 -28px;
+            position: relative;
+            z-index: 10000;
         }
 
         .nav-item {
@@ -187,6 +254,9 @@
             padding: 6px 4px;
             border-radius: 8px;
             transition: background 0.18s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .nav-item-back {
@@ -200,6 +270,9 @@
             border: 1.5px solid #6a5010;
             box-shadow: 0 2px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(201,162,39,0.12);
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .nav-item-back span { font-size: 18px; color: #c9a227; }
@@ -228,6 +301,39 @@
         }
         .nav-item:hover .nav-icon  { color: #d4b040; }
         .nav-item:hover .nav-label { color: #d4b040; }
+
+        /* ── Инвентарь ── */
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 8px 22px 12px;
+        }
+
+        .inv-card {
+            position: relative;
+            aspect-ratio: 3 / 4;
+            background: center / 100% 100% no-repeat;
+            cursor: pointer;
+            transition: transform 0.18s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 12%;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .inv-card:hover { transform: translateY(-4px); }
+
+        .inv-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
     </style>
 </head>
 <body>
@@ -238,23 +344,39 @@
             <h1 class="page-title">Коллекция</h1>
         </div>
 
-        <!-- Блок 2: Верхний контент — 3 слота -->
+        <!-- Блок 2: Верхний контент — 3 активных слота из БД -->
         <div class="block-top">
-            <div class="card-slot"></div>
-            <div class="card-slot"></div>
-            <div class="card-slot"></div>
+            {% for slot in active_slots %}
+            <div class="slot-wrap">
+                <span class="slot-num">x{{ slot.value }}</span>
+                <div class="card-slot card-slot--{{ slot.frame }}">
+                    <img class="slot-img" src="{% static 'game/img/card-sample.png' %}" alt="{{ slot.name }}">
+                    {% if slot.frame == 'bronze' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-bronze.png' %}" alt="">
+                    {% elif slot.frame == 'silver' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-silver.png' %}" alt="">
+                    {% elif slot.frame == 'gold' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-gold.png' %}" alt="">{% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
 
         <!-- Кнопка под слотами -->
         <div class="slot-btn-wrap">
-            <button class="round-btn">+</button>
+            <button class="round-btn"></button>
         </div>
 
         <!-- Разделитель -->
         <div class="block-divider"></div>
 
-        <!-- Блок 3: Карточки -->
-        <div class="block-cards"></div>
+        <!-- Блок 3: Карточки из БД -->
+        <div class="block-cards">
+            <div class="inv-grid">
+                {% for card in inventory_cards %}
+                <div class="inv-card">
+                    <img class="inv-card-img" src="{% static 'game/img/card-sample.png' %}" alt="{{ card.name }}">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
         <!-- Нижняя навигация -->
         <nav class="bottom-nav">
@@ -279,6 +401,7 @@
             </a>
         </nav>
 
+        <img class="bg-frame-overlay" src="{% static 'game/img/bg-frame.png' %}" alt="">
     </div>
 </body>
 </html>

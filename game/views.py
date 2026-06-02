@@ -16,6 +16,13 @@ def index(request):
         {'name': 'Комиссар',  'icon': '🏛',  'value': '1.7', 'rarity': 'rare',      'description': 'Может ликвидировать одного бандита за ночь.'},
         {'name': 'Телохран.', 'icon': '🛡',  'value': '1.5', 'rarity': 'uncommon',  'description': 'Встаёт под удар вместо выбранного игрока.'},
     ]
+    active_slots = [
+        {'name': 'Детектив', 'icon': '🔍', 'frame': 'bronze', 'value': '1.4'},
+        {'name': 'Мафия',    'icon': '🔫', 'frame': 'silver', 'value': '1.8'},
+        {'name': 'Шериф',    'icon': '⭐', 'frame': 'gold',   'value': '2.4'},
+    ]
+
     return render(request, 'game/index.html', {
         'inventory_cards': inventory_cards,
+        'active_slots': active_slots,
     })
