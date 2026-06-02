@@ -195,9 +195,10 @@
 .block-cards {
     flex: 4;
     min-height: 0;
-    overflow-y: auto;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     padding-bottom: 8px;
-    touch-action: pan-y;
 }
 
 .inv-grid {
@@ -279,8 +280,4 @@
 
 .inv-card.press-charging {
     animation: press-charge 1.5s ease-in forwards;
-}
-
-.inv-card {
-    touch-action: pan-y;
 }

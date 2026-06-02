@@ -5,10 +5,12 @@
     let chargeTimer = null;
     let dragTimer = null;
     let isDragging = false;
+    let activeCard = null;
     let touchStartX = 0;
     let touchStartY = 0;
     let dragMoveHandler = null;
 
+    const blockCards = document.querySelector('.block-cards');
     const hammerCountEl = document.querySelector('.hammer-count');
     let hammerCount = parseInt(hammerCountEl?.dataset.count ?? '0', 10);
     const hammerBtn = document.querySelector('.round-btn');
@@ -57,10 +59,10 @@
 
     function removeGhost() { if (ghost) { ghost.remove(); ghost = null; } }
 
-    function cancelAll(card) {
+    function cancelAll() {
         if (chargeTimer) { clearTimeout(chargeTimer); chargeTimer = null; }
         if (dragTimer)   { clearTimeout(dragTimer);   dragTimer   = null; }
-        if (card) card.classList.remove('press-charging');
+        if (activeCard)  { activeCard.classList.remove('press-charging'); }
     }
 
     function cleanup() {
@@ -73,6 +75,7 @@
         clearSlotHighlights();
         hoveredSlot = null;
         isDragging = false;
+        activeCard = null;
     }
 
     function activateDrag(card) {
@@ -137,48 +140,45 @@
         });
     });
 
-    // Touch: перші 500мс — повна тиша (скрол не заважає)
-    //        500мс–2000мс — анімація зарядки якщо ще тримаєш
-    //        2000мс — активація drag
-    document.querySelectorAll('.inv-card').forEach(card => {
-        card.addEventListener('touchstart', e => {
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
+    // Всі touch-слухачі — тільки на контейнері, passive: true
+    // Картки самі не чіпаємо — вони не можуть блокувати скрол
+    blockCards.addEventListener('touchstart', e => {
+        const card = e.target.closest('.inv-card');
+        if (!card) return;
 
-            // Через 500мс (якщо не рушив) — показати анімацію
-            chargeTimer = setTimeout(() => {
-                chargeTimer = null;
-                card.classList.add('press-charging');
+        activeCard = card;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
 
-                // Ще через 1500мс — активувати drag (разом 2000мс)
-                dragTimer = setTimeout(() => {
-                    dragTimer = null;
-                    activateDrag(card);
-                }, 1500);
-            }, 500);
-        }, { passive: true });
+        chargeTimer = setTimeout(() => {
+            chargeTimer = null;
+            card.classList.add('press-charging');
+            dragTimer = setTimeout(() => {
+                dragTimer = null;
+                activateDrag(card);
+            }, 1500);
+        }, 500);
+    }, { passive: true });
 
-        // Passive — скрол вільний, тільки скасовуємо таймери якщо рушив
-        card.addEventListener('touchmove', e => {
-            if (isDragging) return;
-            const touch = e.touches[0];
-            const dx = Math.abs(touch.clientX - touchStartX);
-            const dy = Math.abs(touch.clientY - touchStartY);
-            if (dx > 8 || dy > 8) cancelAll(card);
-        }, { passive: true });
+    blockCards.addEventListener('touchmove', e => {
+        if (isDragging || !activeCard) return;
+        const dx = Math.abs(e.touches[0].clientX - touchStartX);
+        const dy = Math.abs(e.touches[0].clientY - touchStartY);
+        if (dx > 8 || dy > 8) cancelAll();
+    }, { passive: true });
 
-        card.addEventListener('touchend', () => {
-            cancelAll(card);
-            if (isDragging) {
-                if (hoveredSlot && dragSrc) dropIntoSlot(hoveredSlot, getImgSrc(dragSrc));
-                cleanup();
-            }
-        });
-
-        card.addEventListener('touchcancel', () => {
-            cancelAll(card);
+    blockCards.addEventListener('touchend', () => {
+        cancelAll();
+        if (isDragging) {
+            if (hoveredSlot && dragSrc) dropIntoSlot(hoveredSlot, getImgSrc(dragSrc));
             cleanup();
-        });
-    });
+        } else {
+            activeCard = null;
+        }
+    }, { passive: true });
+
+    blockCards.addEventListener('touchcancel', () => {
+        cancelAll();
+        cleanup();
+    }, { passive: true });
 })();
