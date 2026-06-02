@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мафия</title>
+    {% load static %}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 430px;
+            height: 100dvh;
+            background: url("{% static 'game/img/bg.png' %}") center / 100% 100% no-repeat;
+            display: flex;
+            flex-direction: column;
+            /* отступы внутри рамки */
+            padding: 12px 28px 0 28px;
+        }
+
+        /* ── Блок 1: Шапка ── */
+        .block-header {
+            flex-shrink: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-family: 'Palatino Linotype', Palatino, Georgia, serif;
+            font-size: 44px;
+            font-weight: 900;
+            color: #d4a84b;
+            text-shadow:
+                0 0 20px rgba(201,162,39,0.5),
+                0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+
+        /* ── Блок 2: Верхний контент (активные карты) ── */
+        .block-top {
+            flex: 1.4;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 14px;
+        }
+
+        .card-slot {
+            flex: 1;
+            height: 100%;
+            border: 2px solid #c9a227;
+            border-radius: 8px;
+            background: rgba(10, 15, 25, 0.6);
+            box-shadow:
+                0 0 0 1px rgba(201,162,39,0.15),
+                inset 0 0 12px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .card-slot::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(201,162,39,0.2);
+            border-radius: 5px;
+        }
+
+        /* уголки */
+        .card-slot::after {
+            content: '◈';
+            position: absolute;
+            top: -10px; left: 50%;
+            transform: translateX(-50%);
+            color: #c9a227;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(201,162,39,0.7);
+        }
+
+        /* Первый слот — бронзовая рамка */
+        .card-slot:first-child {
+            border: none;
+            box-shadow: none;
+            background: url("{% static 'game/img/frames/frame-bronze.png' %}") center / 100% 100% no-repeat;
+        }
+
+        .card-slot:first-child::before { display: none; }
+        .card-slot:first-child::after  { display: none; }
+
+        /* Центральный слот — серебряная рамка */
+        .card-slot:nth-child(2) {
+            border: none;
+            box-shadow: none;
+            background: url("{% static 'game/img/frames/frame-silver.png' %}") center / 100% 100% no-repeat;
+        }
+
+        .card-slot:nth-child(2)::before { display: none; }
+        .card-slot:nth-child(2)::after  { display: none; }
+
+        /* Последний слот — рамка из изображения */
+        .card-slot:last-child {
+            border: none;
+            box-shadow: none;
+            background: url("{% static 'game/img/frames/frame-gold.png' %}") center / 100% 100% no-repeat;
+        }
+
+        .card-slot:last-child::before { display: none; }
+        .card-slot:last-child::after  { display: none; }
+
+        .slot-btn-wrap {
+            display: flex;
+            justify-content: center;
+            margin-top: 14px;
+            margin-bottom: -8px;
+        }
+
+        .round-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid #c9a227;
+            background: linear-gradient(180deg, #2a2010 0%, #1a1008 100%);
+            color: #f0d060;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(201,162,39,0.4), inset 0 1px 0 rgba(255,220,100,0.1);
+            transition: box-shadow 0.18s, transform 0.15s;
+        }
+
+        .round-btn:hover {
+            box-shadow: 0 0 18px rgba(201,162,39,0.7);
+            transform: scale(1.08);
+        }
+
+        /* ── Разделитель ── */
+        .block-divider {
+            flex-shrink: 0;
+            width: 100%;
+            height: 40px;
+            background: url("{% static 'game/img/divider.png' %}") center / contain no-repeat;
+        }
+
+        /* ── Блок 3: Карточки ── */
+        .block-cards {
+            flex: 4;
+            min-height: 0;
+            overflow-y: auto;
+            padding-bottom: 8px;
+        }
+
+        /* ── Нижняя навигация ── */
+        .bottom-nav {
+            flex-shrink: 0;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 0 6px 0;
+            margin: 0 -28px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            min-width: 52px;
+            padding: 6px 4px;
+            border-radius: 8px;
+            transition: background 0.18s;
+        }
+
+        .nav-item-back {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #2a2010 0%, #1a1408 100%);
+            border: 1.5px solid #6a5010;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(201,162,39,0.12);
+            cursor: pointer;
+        }
+
+        .nav-item-back span { font-size: 18px; color: #c9a227; }
+
+        .nav-icon {
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+            color: #8a7a60;
+            transition: color 0.18s;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-family: Georgia, serif;
+            color: #6a5a40;
+            letter-spacing: 0.3px;
+            transition: color 0.18s;
+        }
+
+        .nav-item.active .nav-icon  { color: #f0d060; filter: drop-shadow(0 0 6px rgba(201,162,39,0.6)); }
+        .nav-item.active .nav-label { color: #f0d060; }
+        .nav-item.active {
+            background: linear-gradient(180deg, rgba(90,60,10,0.45) 0%, rgba(50,34,6,0.6) 100%);
+            box-shadow: 0 0 0 1px rgba(201,162,39,0.22);
+        }
+        .nav-item:hover .nav-icon  { color: #d4b040; }
+        .nav-item:hover .nav-label { color: #d4b040; }
+    </style>
+</head>
+<body>
+    <div class="app">
+
+        <!-- Блок 1: Шапка -->
+        <div class="block-header">
+            <h1 class="page-title">Коллекция</h1>
+        </div>
+
+        <!-- Блок 2: Верхний контент — 3 слота -->
+        <div class="block-top">
+            <div class="card-slot"></div>
+            <div class="card-slot"></div>
+            <div class="card-slot"></div>
+        </div>
+
+        <!-- Кнопка под слотами -->
+        <div class="slot-btn-wrap">
+            <button class="round-btn">+</button>
+        </div>
+
+        <!-- Разделитель -->
+        <div class="block-divider"></div>
+
+        <!-- Блок 3: Карточки -->
+        <div class="block-cards"></div>
+
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <div class="nav-item-back">
+                <span>&#8592;</span>
+            </div>
+            <a class="nav-item" href="#">
+                <span class="nav-icon">&#9826;</span>
+                <span class="nav-label">Паки</span>
+            </a>
+            <a class="nav-item active" href="#">
+                <span class="nav-icon">&#127183;</span>
+                <span class="nav-label">Коллекция</span>
+            </a>
+            <a class="nav-item" href="#">
+                <span class="nav-icon">&#128176;</span>
+                <span class="nav-label">Магазин</span>
+            </a>
+            <a class="nav-item" href="#">
+                <span class="nav-icon">&#9881;</span>
+                <span class="nav-label">Ещё</span>
+            </a>
+        </nav>
+
+    </div>
+</body>
+</html>
