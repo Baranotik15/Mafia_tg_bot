@@ -2,7 +2,8 @@
     let dragSrc = null;
     let ghost = null;
     let hoveredSlot = null;
-    let longPressTimer = null;
+    let chargeTimer = null;
+    let dragTimer = null;
     let isDragging = false;
     let touchStartX = 0;
     let touchStartY = 0;
@@ -56,8 +57,9 @@
 
     function removeGhost() { if (ghost) { ghost.remove(); ghost = null; } }
 
-    function cancelLongPress(card) {
-        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    function cancelAll(card) {
+        if (chargeTimer) { clearTimeout(chargeTimer); chargeTimer = null; }
+        if (dragTimer)   { clearTimeout(dragTimer);   dragTimer   = null; }
         if (card) card.classList.remove('press-charging');
     }
 
@@ -71,6 +73,37 @@
         clearSlotHighlights();
         hoveredSlot = null;
         isDragging = false;
+    }
+
+    function activateDrag(card) {
+        isDragging = true;
+        dragSrc = card;
+        card.classList.remove('press-charging');
+
+        const rect = card.getBoundingClientRect();
+        ghost = card.cloneNode(true);
+        ghost.className = 'drag-ghost';
+        ghost.style.width  = rect.width  + 'px';
+        ghost.style.height = rect.height + 'px';
+        ghost.style.left   = rect.left   + 'px';
+        ghost.style.top    = rect.top    + 'px';
+        document.body.appendChild(ghost);
+        card.classList.add('dragging');
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        dragMoveHandler = ev => {
+            ev.preventDefault();
+            const t = ev.touches[0];
+            ghost.style.left = (t.clientX - ghost.offsetWidth  / 2) + 'px';
+            ghost.style.top  = (t.clientY - ghost.offsetHeight / 2) + 'px';
+            ghost.style.display = 'none';
+            const el = document.elementFromPoint(t.clientX, t.clientY);
+            ghost.style.display = '';
+            clearSlotHighlights();
+            hoveredSlot = el ? el.closest('.slot-wrap') : null;
+            if (hoveredSlot) hoveredSlot.classList.add('slot-drop-hover');
+        };
+        document.addEventListener('touchmove', dragMoveHandler, { passive: false });
     }
 
     // Desktop drag
@@ -104,59 +137,39 @@
         });
     });
 
-    // Touch: long press 1.5s → drag
+    // Touch: перші 500мс — повна тиша (скрол не заважає)
+    //        500мс–2000мс — анімація зарядки якщо ще тримаєш
+    //        2000мс — активація drag
     document.querySelectorAll('.inv-card').forEach(card => {
         card.addEventListener('touchstart', e => {
             const touch = e.touches[0];
             touchStartX = touch.clientX;
             touchStartY = touch.clientY;
-            card.classList.add('press-charging');
 
-            longPressTimer = setTimeout(() => {
-                longPressTimer = null;
-                isDragging = true;
-                dragSrc = card;
-                card.classList.remove('press-charging');
+            // Через 500мс (якщо не рушив) — показати анімацію
+            chargeTimer = setTimeout(() => {
+                chargeTimer = null;
+                card.classList.add('press-charging');
 
-                const rect = card.getBoundingClientRect();
-                ghost = card.cloneNode(true);
-                ghost.className = 'drag-ghost';
-                ghost.style.width  = rect.width  + 'px';
-                ghost.style.height = rect.height + 'px';
-                ghost.style.left   = rect.left   + 'px';
-                ghost.style.top    = rect.top    + 'px';
-                document.body.appendChild(ghost);
-                card.classList.add('dragging');
-                if (navigator.vibrate) navigator.vibrate(50);
-
-                // Non-passive touchmove added to document ONLY when dragging
-                dragMoveHandler = ev => {
-                    ev.preventDefault();
-                    const t = ev.touches[0];
-                    ghost.style.left = (t.clientX - ghost.offsetWidth  / 2) + 'px';
-                    ghost.style.top  = (t.clientY - ghost.offsetHeight / 2) + 'px';
-                    ghost.style.display = 'none';
-                    const el = document.elementFromPoint(t.clientX, t.clientY);
-                    ghost.style.display = '';
-                    clearSlotHighlights();
-                    hoveredSlot = el ? el.closest('.slot-wrap') : null;
-                    if (hoveredSlot) hoveredSlot.classList.add('slot-drop-hover');
-                };
-                document.addEventListener('touchmove', dragMoveHandler, { passive: false });
-            }, 1500);
+                // Ще через 1500мс — активувати drag (разом 2000мс)
+                dragTimer = setTimeout(() => {
+                    dragTimer = null;
+                    activateDrag(card);
+                }, 1500);
+            }, 500);
         }, { passive: true });
 
-        // Passive — не блокує скрол, тільки скасовує таймер якщо рушив
+        // Passive — скрол вільний, тільки скасовуємо таймери якщо рушив
         card.addEventListener('touchmove', e => {
             if (isDragging) return;
             const touch = e.touches[0];
             const dx = Math.abs(touch.clientX - touchStartX);
             const dy = Math.abs(touch.clientY - touchStartY);
-            if (dx > 8 || dy > 8) cancelLongPress(card);
+            if (dx > 8 || dy > 8) cancelAll(card);
         }, { passive: true });
 
         card.addEventListener('touchend', () => {
-            cancelLongPress(card);
+            cancelAll(card);
             if (isDragging) {
                 if (hoveredSlot && dragSrc) dropIntoSlot(hoveredSlot, getImgSrc(dragSrc));
                 cleanup();
@@ -164,7 +177,7 @@
         });
 
         card.addEventListener('touchcancel', () => {
-            cancelLongPress(card);
+            cancelAll(card);
             cleanup();
         });
     });
