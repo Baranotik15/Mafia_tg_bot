@@ -282,5 +282,5 @@
 }
 
 .inv-card.press-charging {
-    animation: press-charge 1.5s ease-in forwards;
+    animation: press-charge 0.8s ease-in forwards;
 }

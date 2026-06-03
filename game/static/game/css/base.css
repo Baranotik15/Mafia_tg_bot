@@ -1,5 +1,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
 .orientation-lock {
     display: none;
     position: fixed;

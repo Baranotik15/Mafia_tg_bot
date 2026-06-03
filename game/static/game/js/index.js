@@ -156,8 +156,8 @@
             dragTimer = setTimeout(() => {
                 dragTimer = null;
                 activateDrag(card);
-            }, 1500);
-        }, 500);
+            }, 800);
+        }, 200);
     }, { passive: true });
 
     blockCards.addEventListener('touchmove', e => {
