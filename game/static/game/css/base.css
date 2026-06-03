@@ -19,7 +19,7 @@ html, body {
 
 .app {
     width: 390px;
-    height: 740px;
+    height: 740px; /* overridden by JS to match viewport */
     flex-shrink: 0;
     background: var(--bg-image) center / 100% 100% no-repeat;
     display: flex;
