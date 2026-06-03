@@ -2,11 +2,28 @@ from django.shortcuts import render
 
 
 def packs(request):
-    return render(request, 'game/packs.html')
+    return render(request, 'game/packs.html', {'pack_count': 3})
 
 
 def leaders(request):
-    return render(request, 'game/leaders.html')
+    all_players = [
+        {'rank': 1,  'name': 'ShadowMaster', 'score': 15230},
+        {'rank': 2,  'name': 'DarkKnight99',  'score': 12480},
+        {'rank': 3,  'name': 'NightOwl',      'score': 9760},
+        {'rank': 4,  'name': 'IronWolf',      'score': 8340},
+        {'rank': 5,  'name': 'CrimsonAce',    'score': 7120},
+        {'rank': 6,  'name': 'RedPhoenix',    'score': 6450},
+        {'rank': 7,  'name': 'GhostBlade',    'score': 5280},
+        {'rank': 8,  'name': 'StormRider',    'score': 4890},
+        {'rank': 9,  'name': 'BlazeWolf',     'score': 3760},
+        {'rank': 10, 'name': 'VoidWalker',    'score': 3120},
+    ]
+    current_player = {'rank': 12, 'name': 'YouPlayer', 'score': 2340}
+    return render(request, 'game/leaders.html', {
+        'top3': all_players[:3],
+        'rest': all_players[3:],
+        'current_player': current_player,
+    })
 
 
 def index(request):

@@ -1,17 +1,33 @@
 {% extends 'game/base.html' %}
 {% load static %}
 
-{% block title %}Паки — Мафия{% endblock %}
+{% block title %}Паки — Мафія{% endblock %}
 
 {% block nav_packs %}active{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{% static 'game/css/pages.css' %}">
+    <link rel="stylesheet" href="{% static 'game/css/packs.css' %}">
 {% endblock %}
 
 {% block content %}
-    <div class="page-placeholder">
-        <h1 class="page-placeholder-title">Паки</h1>
-        <span class="page-placeholder-text">Скоро здесь появятся паки</span>
+<div class="packs-page">
+
+    <div class="packs-title">Паки</div>
+
+    <div class="packs-center">
+        <div class="pack-bottle-wrap">
+            <img class="pack-bottle" src="{% static 'game/img/pucks/pack-bottle.png' %}" alt="пак">
+            <span class="pack-count">x{{ pack_count }}</span>
+        </div>
     </div>
+
+    <div class="packs-actions">
+        <div class="packs-icons-row">
+            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-add.png' %}"      alt="Додати">
+            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-question.png' %}" alt="Інфо">
+        </div>
+        <img class="pack-open-btn" src="{% static 'game/img/pucks/pack-open.png' %}" alt="Відкрити пак">
+    </div>
+
+</div>
 {% endblock %}

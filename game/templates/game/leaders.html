@@ -1,7 +1,7 @@
 {% extends 'game/base.html' %}
 {% load static %}
 
-{% block title %}Лидеры — Мафія{% endblock %}
+{% block title %}Лідери — Мафія{% endblock %}
 
 {% block nav_leaders %}active{% endblock %}
 
@@ -9,51 +9,46 @@
     <link rel="stylesheet" href="{% static 'game/css/leaders.css' %}">
     <style>
         :root {
-            --lr1:     url("{% static 'game/img/liderbord/leader-1.png' %}");
-            --lr2:     url("{% static 'game/img/liderbord/leader-2.png' %}");
-            --lr3:     url("{% static 'game/img/liderbord/leader-3.png' %}");
+            --lr1:      url("{% static 'game/img/liderbord/leader-1.png' %}");
+            --lr2:      url("{% static 'game/img/liderbord/leader-2.png' %}");
+            --lr3:      url("{% static 'game/img/liderbord/leader-3.png' %}");
             --lr-other: url("{% static 'game/img/liderbord/leader-other.png' %}");
+            --divider:  url("{% static 'game/img/divider.png' %}");
         }
     </style>
 {% endblock %}
 
 {% block content %}
 <div class="leaders-page">
-    <div class="leaders-title">Лідери</div>
-    <div class="leaders-list">
 
-        <div class="leader-row leader-row--1">
-            <div class="leader-avatar" style="background:#7a3218;">S</div>
-            <div class="leader-info"><span class="leader-name">ShadowMaster</span></div>
-            <span class="leader-score">2 847 очків</span>
+    <div class="leaders-title">Таблиця лідерів</div>
+
+    <div class="leaders-top3">
+        {% for p in top3 %}
+        <div class="leader-row leader-row--{{ p.rank }}">
+            <div class="leader-info"><span class="leader-name">{{ p.name }}</span></div>
+            <span class="leader-score">{{ p.score|stringformat:"d" }}</span>
         </div>
-
-        <div class="leader-row leader-row--2">
-            <div class="leader-avatar" style="background:#2a3a6a;">D</div>
-            <div class="leader-info"><span class="leader-name">DarkKnight99</span></div>
-            <span class="leader-score">2 341 очків</span>
-        </div>
-
-        <div class="leader-row leader-row--3">
-            <div class="leader-avatar" style="background:#2a5a3a;">N</div>
-            <div class="leader-info"><span class="leader-name">NightOwl</span></div>
-            <span class="leader-score">1 998 очків</span>
-        </div>
-
-        <div class="leader-row leader-row--4">
-            <div class="leader-rank">4</div>
-            <div class="leader-avatar" style="background:#5a2a1a;">I</div>
-            <div class="leader-info"><span class="leader-name">IronWolf</span></div>
-            <span class="leader-score">1 754 очків</span>
-        </div>
-
-        <div class="leader-row leader-row--5">
-            <div class="leader-rank">5</div>
-            <div class="leader-avatar" style="background:#5a1a2a;">C</div>
-            <div class="leader-info"><span class="leader-name">CrimsonAce</span></div>
-            <span class="leader-score">1 502 очків</span>
-        </div>
-
+        {% endfor %}
     </div>
+
+    <div class="leaders-divider"></div>
+
+    <div class="leaders-scroll">
+        {% for p in rest %}
+        <div class="leader-row-other">
+            <span class="lr-rank">{{ p.rank }}</span>
+            <span class="lr-name">{{ p.name }}</span>
+            <span class="lr-score">{{ p.score|stringformat:"d" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="leaders-you">
+        <span class="leaders-you-rank">#{{ current_player.rank }}</span>
+        <span class="leaders-you-name">{{ current_player.name }}</span>
+        <span class="leaders-you-score">{{ current_player.score|stringformat:"d" }}</span>
+    </div>
+
 </div>
 {% endblock %}
