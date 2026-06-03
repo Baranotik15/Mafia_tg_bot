@@ -39,8 +39,7 @@
 }
 
 .pack-bottle {
-    width: 42vw;
-    max-width: 175px;
+    width: 164px;
     filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7))
             drop-shadow(0 0 16px rgba(201,162,39,0.2));
     transition: transform 0.2s, filter 0.2s;

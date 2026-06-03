@@ -165,8 +165,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0 22px 0 12px;
+    padding: 0 44px 0 12px;
     margin-top: 6px;
+    margin-bottom: 12px;
     background: rgba(201,162,39,0.12);
     border: 1px solid rgba(201,162,39,0.6);
     border-radius: 6px;
