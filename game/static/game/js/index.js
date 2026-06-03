@@ -156,16 +156,23 @@
             dragTimer = setTimeout(() => {
                 dragTimer = null;
                 activateDrag(card);
-            }, 800);
-        }, 200);
+            }, 400);
+        }, 100);
     }, { passive: true });
 
     blockCards.addEventListener('touchmove', e => {
-        if (isDragging || !activeCard) return;
+        if (isDragging) return;
+        if (!activeCard) return;
+
         const dx = Math.abs(e.touches[0].clientX - touchStartX);
         const dy = Math.abs(e.touches[0].clientY - touchStartY);
-        if (dx > 8 || dy > 8) cancelAll();
-    }, { passive: true });
+
+        if (chargeTimer) {
+            if (dx > 8 || dy > 8) cancelAll();
+        } else {
+            e.preventDefault();
+        }
+    }, { passive: false });
 
     blockCards.addEventListener('touchend', () => {
         cancelAll();
