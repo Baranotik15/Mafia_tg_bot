@@ -1,11 +1,15 @@
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('portrait').catch(() => {});
-}
-if (window.Telegram && Telegram.WebApp && Telegram.WebApp.lockOrientation) {
-    Telegram.WebApp.lockOrientation();
-}
+(function scaleApp() {
+    const app = document.querySelector('.app');
+    if (!app) return;
+    function apply() {
+        const scale = Math.min(window.innerWidth / 390, window.innerHeight / 844);
+        app.style.transform = `scale(${scale})`;
+    }
+    apply();
+    window.addEventListener('resize', apply);
+})();
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('touchstart', () => {

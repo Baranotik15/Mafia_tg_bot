@@ -7,59 +7,26 @@ img {
     -webkit-user-drag: none;
 }
 
-.orientation-lock {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 999999;
-    background: #0a0d14;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-.orientation-lock-icon {
-    font-size: 64px;
-    animation: rotate-hint 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes rotate-hint {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(-90deg); }
-}
-
-.orientation-lock-text {
-    font-family: 'Palatino Linotype', Georgia, serif;
-    font-size: 18px;
-    color: #d4a84b;
-    text-align: center;
-    padding: 0 32px;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-}
-
-@media (orientation: landscape) {
-    .orientation-lock { display: flex; }
-}
-
 html, body {
     width: 100%;
     height: 100%;
     background: #000;
     display: flex;
     justify-content: center;
+    align-items: center;
     overflow: hidden;
 }
 
 .app {
-    width: 100%;
-    max-width: 430px;
-    height: 100dvh;
+    width: 390px;
+    height: 844px;
+    flex-shrink: 0;
     background: var(--bg-image) center / 100% 100% no-repeat;
     display: flex;
     flex-direction: column;
     position: relative;
     padding: 12px 28px 0 28px;
+    transform-origin: center center;
 }
 
 .bg-frame-overlay {
