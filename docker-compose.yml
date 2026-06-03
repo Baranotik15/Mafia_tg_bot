@@ -1,25 +1,48 @@
 services:
+  db:
+    image: postgres:16-alpine
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   bot:
     build: .
     command: python bot.py
     env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   web:
     build: .
     command: >
-      sh -c "python manage.py collectstatic --noinput &&
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
              gunicorn mafia_web.wsgi:application --bind 0.0.0.0:8000 --workers 2"
     env_file: .env
     volumes:
       - static_files:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -35,3 +58,4 @@ services:
 
 volumes:
   static_files:
+  postgres_data:
