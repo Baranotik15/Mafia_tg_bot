@@ -1,17 +1,69 @@
 {% extends 'game/base.html' %}
 {% load static %}
 
-{% block title %}Лидеры — Мафия{% endblock %}
+{% block title %}Лидеры — Мафія{% endblock %}
 
 {% block nav_leaders %}active{% endblock %}
 
 {% block page_css %}
-    <link rel="stylesheet" href="{% static 'game/css/pages.css' %}">
+    <link rel="stylesheet" href="{% static 'game/css/leaders.css' %}">
+    <style>
+        :root {
+            --lr1:     url("{% static 'game/img/liderbord/leader-1.png' %}");
+            --lr2:     url("{% static 'game/img/liderbord/leader-2.png' %}");
+            --lr3:     url("{% static 'game/img/liderbord/leader-3.png' %}");
+            --lr-other: url("{% static 'game/img/liderbord/leader-other.png' %}");
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-    <div class="page-placeholder">
-        <h1 class="page-placeholder-title">Лидеры</h1>
-        <span class="page-placeholder-text">Скоро здесь появится таблица лидеров</span>
+<div class="leaders-page">
+    <div class="leaders-title">Лідери</div>
+    <div class="leaders-list">
+
+        <div class="leader-row leader-row--1">
+            <div class="leader-avatar" style="background:#7a3218;">S</div>
+            <div class="leader-info">
+                <span class="leader-name">ShadowMaster</span>
+                <span class="leader-score">2 847 очків</span>
+            </div>
+        </div>
+
+        <div class="leader-row leader-row--2">
+            <div class="leader-avatar" style="background:#2a3a6a;">D</div>
+            <div class="leader-info">
+                <span class="leader-name">DarkKnight99</span>
+                <span class="leader-score">2 341 очків</span>
+            </div>
+        </div>
+
+        <div class="leader-row leader-row--3">
+            <div class="leader-avatar" style="background:#2a5a3a;">N</div>
+            <div class="leader-info">
+                <span class="leader-name">NightOwl</span>
+                <span class="leader-score">1 998 очків</span>
+            </div>
+        </div>
+
+        <div class="leader-row leader-row--4">
+            <div class="leader-rank">4</div>
+            <div class="leader-avatar" style="background:#5a2a1a;">I</div>
+            <div class="leader-info">
+                <span class="leader-name">IronWolf</span>
+                <span class="leader-score">1 754 очків</span>
+            </div>
+        </div>
+
+        <div class="leader-row leader-row--5">
+            <div class="leader-rank">5</div>
+            <div class="leader-avatar" style="background:#5a1a2a;">C</div>
+            <div class="leader-info">
+                <span class="leader-name">CrimsonAce</span>
+                <span class="leader-score">1 502 очків</span>
+            </div>
+        </div>
+
     </div>
+</div>
 {% endblock %}

@@ -1,0 +1,22 @@
+.page-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.page-placeholder-title {
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: #d4a84b;
+    text-shadow: 0 0 20px rgba(201,162,39,0.5), 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.page-placeholder-text {
+    font-family: Georgia, serif;
+    font-size: 14px;
+    color: #6a5a40;
+}
