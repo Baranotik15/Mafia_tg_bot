@@ -7,6 +7,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
         const scale = Math.min(window.innerWidth / 390, window.innerHeight / 740, 1.0);
         app.style.transform = `scale(${scale})`;
         app.style.height = Math.round(window.innerHeight / scale) + 'px';
+        app.style.opacity = '1';
     }
     apply();
     window.addEventListener('resize', apply);

@@ -25,9 +25,11 @@
 
     <div class="leaders-top3">
         {% for p in top3 %}
-        <div class="leader-row leader-row--{{ p.rank }}">
+        <div class="leader-row leader-row--{{ forloop.counter }}">
+            {% if p %}
             <div class="leader-info"><span class="leader-name">{{ p.name }}</span></div>
             <span class="leader-score">{{ p.score|stringformat:"d" }}</span>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -36,10 +38,12 @@
 
     <div class="leaders-scroll">
         {% for p in rest %}
-        <div class="leader-row-other">
-            <span class="lr-rank">{{ p.rank }}</span>
+        <div class="leader-row-other {% if p.telegram_id == current_player.telegram_id %}leader-row-me{% endif %}">
+            <span class="lr-rank">{% if p %}{{ p.rank }}{% else %}{{ forloop.counter|add:3 }}{% endif %}</span>
+            {% if p %}
             <span class="lr-name">{{ p.name }}</span>
             <span class="lr-score">{{ p.score|stringformat:"d" }}</span>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

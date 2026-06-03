@@ -8,14 +8,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-dev-secret-key-change-in-production')
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+DEV_PLAYER_ID = int(os.getenv('DEV_PLAYER_ID', 0)) if DEBUG else None
 
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'django.contrib.contenttypes',
     'django.contrib.staticfiles',
     'game',
 ]
+
+_db_engine = os.getenv('DB_ENGINE', 'sqlite')
+
+if _db_engine == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME':     os.getenv('DB_NAME',     'mafia'),
+            'USER':     os.getenv('DB_USER',     'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST':     os.getenv('DB_HOST',     'localhost'),
+            'PORT':     os.getenv('DB_PORT',     '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

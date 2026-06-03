@@ -158,6 +158,26 @@
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
+/* ── My row highlight ── */
+.leader-row-me .lr-rank,
+.leader-row-me .lr-name,
+.leader-row-me .lr-score {
+    color: #f5e070;
+    text-shadow: 0 0 8px rgba(245,224,112,0.6);
+}
+
+/* ── Empty state ── */
+.leaders-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 16px;
+    color: rgba(201,162,39,0.4);
+    text-align: center;
+}
+
 /* ── Current player bar ── */
 .leaders-you {
     flex-shrink: 0;

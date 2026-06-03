@@ -24,10 +24,42 @@
     <div class="packs-actions">
         <div class="packs-icons-row">
             <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-add.png' %}"      alt="Додати">
-            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-question.png' %}" alt="Інфо">
+            <img class="pack-icon-btn" id="pack-info-btn" src="{% static 'game/img/pucks/pack-question.png' %}" alt="Інфо">
         </div>
-        <img class="pack-open-btn" src="{% static 'game/img/pucks/pack-open.png' %}" alt="Відкрити пак">
+        <img class="pack-open-btn" id="pack-open-btn" src="{% static 'game/img/pucks/pack-open.png' %}" alt="Відкрити пак">
     </div>
 
 </div>
+
+<div class="pack-result-overlay" id="pack-info-overlay">
+    <div class="pack-result-box">
+        <div class="pack-result-title">Як це працює?</div>
+        <div class="pack-info-text">
+            Відкрий пак — і отримаєш <strong>3 випадкові карти</strong> у свою колекцію.<br><br>
+            Кожна карта має рідкісність:<br>
+            <span class="prc-rarity-dot dot-common">●</span> Звичайна<br>
+            <span class="prc-rarity-dot dot-uncommon">●</span> Незвична<br>
+            <span class="prc-rarity-dot dot-rare">●</span> Рідкісна<br>
+            <span class="prc-rarity-dot dot-epic">●</span> Епічна<br>
+            <span class="prc-rarity-dot dot-legendary">●</span> Легендарна<br><br>
+            Збери всі 30 унікальних карт!
+        </div>
+        <button class="pack-result-close" id="pack-info-close">Зрозуміло</button>
+    </div>
+</div>
+
+<div class="pack-result-overlay" id="pack-result-overlay">
+    <div class="pack-result-box">
+        <div class="pack-result-title">Нові карти!</div>
+        <div class="pack-result-cards" id="pack-result-cards"></div>
+        <button class="pack-result-close" id="pack-result-close">OK</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    const OPEN_URL = "{% url 'open_pack' %}";
+</script>
+<script src="{% static 'game/js/packs.js' %}"></script>
 {% endblock %}
