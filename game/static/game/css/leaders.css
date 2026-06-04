@@ -184,10 +184,9 @@
     height: 52px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 0 44px 0 12px;
-    margin-top: 6px;
-    margin-bottom: 12px;
+    gap: 8px;
+    padding: 0 14px;
+    margin: 6px 0 12px;
     background: rgba(201,162,39,0.12);
     border: 1px solid rgba(201,162,39,0.6);
     border-radius: 6px;
@@ -196,16 +195,17 @@
 
 .leaders-you-rank {
     flex-shrink: 0;
-    width: 36px;
+    min-width: 52px;
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 15px;
     font-weight: bold;
     color: #d4a84b;
-    text-align: center;
+    text-align: left;
 }
 
 .leaders-you-name {
     flex: 1;
+    min-width: 0;
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 14px;
     font-weight: bold;
@@ -217,6 +217,8 @@
 
 .leaders-you-score {
     flex-shrink: 0;
+    min-width: 40px;
+    text-align: right;
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 15px;
     font-weight: bold;
