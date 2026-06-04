@@ -50,7 +50,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'game.middleware.TelegramAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'mafia_web.urls'

@@ -2,7 +2,14 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 (function telegramAuth() {
     const tg = window.Telegram?.WebApp;
-    if (!tg || !tg.initData) return;
+    if (!tg || !tg.initData) {
+        document.body.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100vh;'
+            + 'background:#111;color:#fff;font-family:sans-serif;text-align:center">'
+            + '<div><p>Відкрийте застосунок через Telegram</p>'
+            + '<a href="https://t.me/" style="color:#5b9bd5">Відкрити Telegram</a></div></div>';
+        return;
+    }
     const body = new URLSearchParams({ init_data: tg.initData });
     fetch('/auth/', { method: 'POST', body })
         .then(r => r.json())
