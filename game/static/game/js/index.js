@@ -69,13 +69,7 @@
         if (hammerCount <= 0) { rejectHammer(); return; }
         const cardSlot = slot.querySelector('.card-slot');
         if (!cardSlot) return;
-        let img = cardSlot.querySelector('.slot-img');
-        if (!img) {
-            img = document.createElement('img');
-            img.className = 'slot-img';
-            cardSlot.appendChild(img);
-        }
-        img.src = imgSrc;
+        cardSlot.innerHTML = `<img src="${imgSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;display:block;">`;
         slot.dataset.occupied = 'true';
         hammerCount--;
         updateHammerUI();
