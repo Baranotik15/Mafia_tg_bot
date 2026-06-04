@@ -58,7 +58,44 @@
         allSlots().forEach(s => s.classList.toggle('slot-drop-hover', s === target));
     }
 
-    // ── API: place card in slot ──
+    function renderSlot(slotWrap, imgSrc) {
+        const cardSlot = slotWrap.querySelector('.card-slot');
+        cardSlot.innerHTML = `<img class="slot-img" src="${imgSrc}" alt="">`;
+        slotWrap.dataset.occupied = 'true';
+        slotWrap.classList.add('slot-occupied');
+    }
+
+    // ── Collection grid ──
+    function removeCardFromGrid(slug) {
+        document.querySelector(`.inv-card[data-slug="${slug}"]`)?.remove();
+        const grid = document.querySelector('.inv-grid');
+        if (grid && grid.children.length === 0) {
+            grid.remove();
+            const empty = document.createElement('div');
+            empty.className = 'inv-empty';
+            empty.textContent = 'Колекція порожня';
+            blockCards.appendChild(empty);
+        }
+    }
+
+    function addCardToGrid(slug) {
+        blockCards.querySelector('.inv-empty')?.remove();
+        let grid = document.querySelector('.inv-grid');
+        if (!grid) {
+            grid = document.createElement('div');
+            grid.className = 'inv-grid';
+            blockCards.appendChild(grid);
+        }
+        const card = document.createElement('div');
+        card.className = 'inv-card';
+        card.dataset.slug = slug;
+        card.setAttribute('draggable', 'true');
+        card.innerHTML = `<img class="inv-card-img" draggable="false" src="${CARTS_URL}${slug}.webp" alt="${slug}">`;
+        grid.appendChild(card);
+        attachDesktopDrag(card);
+    }
+
+    // ── API ──
     async function apiSetSlot(position, slug) {
         const res = await fetch(SET_SLOT_URL, {
             method: 'POST',
@@ -68,64 +105,37 @@
         return res.json();
     }
 
-    // ── API: clear slot ──
-    async function apiClearSlot(position) {
-        const res = await fetch(CLEAR_SLOT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ position }),
-        });
-        return res.json();
-    }
-
-    // ── Place card visually in slot ──
-    function renderSlot(slotWrap, imgSrc) {
-        const cardSlot = slotWrap.querySelector('.card-slot');
-        cardSlot.innerHTML = `<img class="slot-img" src="${imgSrc}" alt="">`;
-        slotWrap.dataset.occupied = 'true';
-        slotWrap.classList.add('slot-occupied');
-    }
-
-    // ── Clear slot visually ──
-    function clearSlotRender(slotWrap) {
-        const cardSlot = slotWrap.querySelector('.card-slot');
-        cardSlot.innerHTML = '';
-        slotWrap.dataset.occupied = 'false';
-        slotWrap.classList.remove('slot-occupied');
-    }
-
-    // ── Drop card into slot (via API) ──
     async function dropIntoSlot(slotWrap, slug, imgSrc) {
         if (hammerCount <= 0) { rejectHammer(); return; }
         const position = parseInt(slotWrap.dataset.position);
         const data = await apiSetSlot(position, slug);
         if (data.ok) {
+            if (data.old_slug) addCardToGrid(data.old_slug);
+            removeCardFromGrid(slug);
             renderSlot(slotWrap, imgSrc);
             hammerCount = data.hammers;
             updateHammerUI();
             swingHammer();
         } else if (data.error === 'no_hammers') {
             rejectHammer();
-        } else if (data.error === 'slot_occupied') {
-            // slot already taken — shake it
-            slotWrap.classList.add('rejecting');
-            setTimeout(() => slotWrap.classList.remove('rejecting'), 450);
         }
     }
 
-    // ── Tap on occupied slot → clear it ──
-    async function tapClearSlot(slotWrap) {
-        if (hammerCount <= 0) { rejectHammer(); return; }
-        const position = parseInt(slotWrap.dataset.position);
-        const data = await apiClearSlot(position);
-        if (data.ok) {
-            clearSlotRender(slotWrap);
-            hammerCount = data.hammers;
-            updateHammerUI();
-            swingHammer();
-        } else if (data.error === 'no_hammers') {
-            rejectHammer();
-        }
+    // ── Zoom overlay ──
+    function showZoomSrc(src) {
+        const overlay = document.createElement('div');
+        overlay.className = 'card-zoom-overlay';
+        overlay.innerHTML = `<button class="card-zoom-close">✕</button><img class="card-zoom-img" src="${src}" alt="">`;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('active'));
+        overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 250);
+        });
+    }
+
+    function showZoom(card) {
+        showZoomSrc(card.querySelector('.inv-card-img').src);
     }
 
     // ── Ghost ──
@@ -148,20 +158,6 @@
 
     function destroyGhost() { if (ghost) { ghost.remove(); ghost = null; } }
 
-    // ── Zoom overlay ──
-    function showZoom(card) {
-        const src = card.querySelector('.inv-card-img').src;
-        const overlay = document.createElement('div');
-        overlay.className = 'card-zoom-overlay';
-        overlay.innerHTML = `<button class="card-zoom-close">✕</button><img class="card-zoom-img" src="${src}" alt="">`;
-        document.body.appendChild(overlay);
-        requestAnimationFrame(() => overlay.classList.add('active'));
-        overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
-            overlay.classList.remove('active');
-            setTimeout(() => overlay.remove(), 250);
-        });
-    }
-
     // ── Reset ──
     function reset() {
         clearTimeout(holdTimer);
@@ -178,10 +174,11 @@
     document.addEventListener('touchstart', e => {
         if (mode !== 'idle') return;
 
-        // Tap on occupied slot → clear it
+        // Tap on occupied slot → zoom
         const slotTap = e.target.closest('.slot-wrap');
         if (slotTap && slotTap.dataset.occupied === 'true') {
-            tapClearSlot(slotTap);
+            const img = slotTap.querySelector('.slot-img');
+            if (img) showZoomSrc(img.src);
             return;
         }
 
@@ -211,7 +208,6 @@
     // ── Touch: move ──
     document.addEventListener('touchmove', e => {
         if (mode === 'idle') return;
-
         const t  = e.touches[0];
         const dy = Math.abs(t.clientY - startY);
 
@@ -220,7 +216,6 @@
             e.preventDefault();
             return;
         }
-
         if (mode === 'dragging') {
             e.preventDefault();
             moveGhost(t.clientX, t.clientY);
@@ -240,8 +235,7 @@
 
         if (mode === 'dragging') {
             const slot = slotAt(t.clientX, t.clientY) || activeSlot;
-            const occupied = slot?.dataset.occupied === 'true';
-            if (slot && !occupied) {
+            if (slot) {
                 const slug   = card.dataset.slug;
                 const imgSrc = card.querySelector('.inv-card-img').src;
                 reset();
@@ -257,15 +251,13 @@
             showZoom(card);
             return;
         }
-
         reset();
     }, { passive: true });
 
     document.addEventListener('touchcancel', reset, { passive: true });
 
-    // ── Desktop drag (HTML5) ──
-    document.querySelectorAll('.inv-card').forEach(card => {
-        card.setAttribute('draggable', 'true');
+    // ── Desktop drag ──
+    function attachDesktopDrag(card) {
         card.addEventListener('dragstart', e => {
             srcCard = card;
             e.dataTransfer.effectAllowed = 'move';
@@ -276,7 +268,9 @@
             highlightSlot(null);
             srcCard = null;
         });
-    });
+    }
+
+    document.querySelectorAll('.inv-card').forEach(attachDesktopDrag);
 
     allSlots().forEach(wrap => {
         wrap.addEventListener('dragover', e => {
@@ -290,7 +284,7 @@
         wrap.addEventListener('drop', e => {
             e.preventDefault();
             highlightSlot(null);
-            if (!srcCard || wrap.dataset.occupied === 'true') return;
+            if (!srcCard) return;
             const slug   = srcCard.dataset.slug;
             const imgSrc = srcCard.querySelector('.inv-card-img').src;
             dropIntoSlot(wrap, slug, imgSrc);

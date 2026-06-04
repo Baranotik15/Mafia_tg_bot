@@ -73,12 +73,15 @@ def get_current_player(request):
 
 def index(request):
     player = get_current_player(request)
-    inventory_cards = list(player.collected_cards.all()) if player else []
     hammer_count = player.hammers if player else 0
     slots = []
+    slotted_ids = set()
     for i in [1, 2, 3]:
         card = getattr(player, f'slot{i}') if player else None
         slots.append({'position': i, 'card': card})
+        if card:
+            slotted_ids.add(card.id)
+    inventory_cards = list(player.collected_cards.exclude(id__in=slotted_ids)) if player else []
     return render(request, 'game/index.html', {
         'inventory_cards': inventory_cards,
         'slots': slots,
@@ -130,14 +133,17 @@ def set_slot(request):
         card = player.collected_cards.get(slug=slug)
     except Card.DoesNotExist:
         return JsonResponse({'error': 'card_not_in_collection'}, status=400)
-    if getattr(player, f'slot{position}') is not None:
-        return JsonResponse({'error': 'slot_occupied'}, status=400)
     if player.hammers <= 0:
         return JsonResponse({'error': 'no_hammers'}, status=400)
+    old_card = getattr(player, f'slot{position}')
     setattr(player, f'slot{position}', card)
     player.hammers -= 1
     player.save(update_fields=[f'slot{position}', 'hammers'])
-    return JsonResponse({'ok': True, 'hammers': player.hammers})
+    return JsonResponse({
+        'ok': True,
+        'hammers': player.hammers,
+        'old_slug': old_card.slug if old_card else None,
+    })
 
 
 @csrf_exempt
