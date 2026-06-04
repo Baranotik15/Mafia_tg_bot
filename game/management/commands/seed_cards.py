@@ -3,6 +3,9 @@ from game.models import Card
 
 SLUGS = [
     'executioner',
+    'dry_win',
+    'sheriff_kill',
+    'three_on_three',
 ]
 
 
