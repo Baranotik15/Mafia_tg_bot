@@ -47,14 +47,19 @@
 
     function dropIntoSlot(slotWrap, imgSrc) {
         if (hammerCount <= 0) { rejectHammer(); return; }
-        const slotImg = slotWrap.querySelector('.slot-img');
-        if (slotImg) {
-            slotImg.src = imgSrc;
-            slotWrap.dataset.occupied = 'true';
-            hammerCount--;
-            updateHammerDisplay();
-            swingHammer();
+        const cardSlot = slotWrap.querySelector('.card-slot');
+        if (!cardSlot) return;
+        let slotImg = cardSlot.querySelector('.slot-img');
+        if (!slotImg) {
+            slotImg = document.createElement('img');
+            slotImg.className = 'slot-img';
+            cardSlot.appendChild(slotImg);
         }
+        slotImg.src = imgSrc;
+        slotWrap.dataset.occupied = 'true';
+        hammerCount--;
+        updateHammerDisplay();
+        swingHammer();
     }
 
     function clearSlotHighlights() {
@@ -190,13 +195,17 @@
     }, { passive: true });
 
     blockCards.addEventListener('touchmove', e => {
-        if (isDragging) return;
+        if (isDragging) { e.preventDefault(); return; }
         if (!activeCard) return;
 
-        // Only cancel hold on clear vertical scroll, not small movements during hold
         const dy = Math.abs(e.touches[0].clientY - touchStartY);
+        // Block scroll during hold charge phase
+        if (holdTimer !== null || activeCard.classList.contains('press-charging')) {
+            e.preventDefault();
+            return;
+        }
         if (dy > 25) cancelHold();
-    }, { passive: true });
+    }, { passive: false });
 
     function handleTouchEnd(e) {
         const wasDragging = isDragging;
