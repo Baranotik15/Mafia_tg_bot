@@ -1,63 +1,199 @@
-const infoBtn = document.getElementById('pack-info-btn');
-const infoOverlay = document.getElementById('pack-info-overlay');
-const infoClose = document.getElementById('pack-info-close');
-
-infoBtn.addEventListener('click', () => infoOverlay.classList.add('active'));
-infoClose.addEventListener('click', () => infoOverlay.classList.remove('active'));
-infoOverlay.addEventListener('click', e => { if (e.target === infoOverlay) infoOverlay.classList.remove('active'); });
-
-const openBtn = document.getElementById('pack-open-btn');
-const overlay = document.getElementById('pack-result-overlay');
-const resultCards = document.getElementById('pack-result-cards');
-const closeBtn = document.getElementById('pack-result-close');
-const countEl = document.querySelector('.pack-count');
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
 const RARITY_LABEL = {
-    common:    'Звичайна',
-    uncommon:  'Незвична',
-    rare:      'Рідкісна',
-    epic:      'Епічна',
-    legendary: 'Легендарна',
+    common: 'Звичайна', uncommon: 'Незвична',
+    rare: 'Рідкісна', epic: 'Епічна', legendary: 'Легендарна',
 };
 
+const infoBtn      = document.getElementById('pack-info-btn');
+const infoOverlay  = document.getElementById('pack-info-overlay');
+const infoClose    = document.getElementById('pack-info-close');
+const openBtn      = document.getElementById('pack-open-btn');
+const countEl      = document.querySelector('.pack-count');
+const packBottle   = document.querySelector('.pack-bottle');
+const packWrap     = document.querySelector('.pack-bottle-wrap');
+const packFlash    = document.getElementById('pack-flash');
+const animOverlay  = document.getElementById('pack-anim-overlay');
+const animTitle    = document.getElementById('pack-anim-title');
+const animContent  = document.getElementById('pack-anim-content');
+const animReward   = document.getElementById('pack-anim-reward');
+const animClose    = document.getElementById('pack-anim-close');
+
+let pendingPacksLeft = null;
+
+// Info overlay
+infoBtn.addEventListener('click', () => infoOverlay.classList.add('active'));
+infoClose.addEventListener('click', () => infoOverlay.classList.remove('active'));
+infoOverlay.addEventListener('click', e => {
+    if (e.target === infoOverlay) infoOverlay.classList.remove('active');
+});
+
+// Open pack
 openBtn.addEventListener('click', async () => {
     if (openBtn.dataset.busy) return;
     const currentCount = parseInt(countEl.textContent.replace('x', '')) || 0;
     if (currentCount <= 0) return;
 
     openBtn.dataset.busy = '1';
-    openBtn.style.opacity = '0.6';
 
+    // Start fetch in parallel with animation
+    const fetchPromise = fetch(OPEN_URL, { method: 'POST' })
+        .then(r => r.ok ? r.json() : Promise.reject(r.status));
+
+    // 1. Shake
+    packBottle.classList.add('pack-shaking');
+    await delay(620);
+    packBottle.classList.remove('pack-shaking');
+
+    // 2. Flash + pack vanishes
+    packFlash.classList.add('pack-flashing');
+    packWrap.classList.add('pack-vanish');
+    await delay(480);
+    packFlash.classList.remove('pack-flashing');
+
+    // 3. Get API result
+    let data;
     try {
-        const res = await fetch(OPEN_URL, { method: 'POST' });
-        const data = await res.json();
-
-        if (!res.ok) return;
-
-        countEl.textContent = 'x' + data.packs_left;
-
-        if (data.collection_full) {
-            resultCards.innerHTML = `
-                <div class="pack-result-full">
-                    🎉 Колекція повна!<br>
-                    <span>+3 молотки за пак</span>
-                </div>`;
-        } else {
-            resultCards.innerHTML = data.cards.map(c => `
-                <div class="pack-result-card pack-result-card--${c.rarity}">
-                    <div class="prc-name">${c.name}</div>
-                    <div class="prc-rarity">${RARITY_LABEL[c.rarity] || c.rarity}</div>
-                </div>
-            `).join('');
-        }
-
-        overlay.classList.add('active');
-    } finally {
+        data = await fetchPromise;
+    } catch {
+        packWrap.classList.remove('pack-vanish');
         delete openBtn.dataset.busy;
-        openBtn.style.opacity = '';
+        return;
     }
+
+    pendingPacksLeft = data.packs_left;
+
+    // 4. Show overlay
+    animContent.innerHTML = '';
+    animReward.innerHTML  = '';
+    animTitle.textContent = '';
+    animTitle.className   = 'pack-anim-title';
+    animClose.style.opacity      = '0';
+    animClose.style.pointerEvents = 'none';
+    animOverlay.classList.add('active');
+
+    await delay(80);
+
+    if (data.collection_full) {
+        await animateCollectionFull();
+    } else {
+        await animateCards(data.cards);
+    }
+
+    animClose.style.opacity      = '1';
+    animClose.style.pointerEvents = '';
 });
 
-closeBtn.addEventListener('click', () => {
-    overlay.classList.remove('active');
+animClose.addEventListener('click', () => {
+    animOverlay.classList.remove('active');
+    packWrap.classList.remove('pack-vanish');
+    if (pendingPacksLeft !== null) {
+        countEl.textContent  = 'x' + pendingPacksLeft;
+        pendingPacksLeft     = null;
+    }
+    delete openBtn.dataset.busy;
 });
+
+function makeCard(card, index) {
+    const img = CARD_IMAGES[index % CARD_IMAGES.length];
+    const el = document.createElement('div');
+    el.className = 'anim-card';
+    el.innerHTML = `
+        <div class="anim-card-inner">
+            <div class="anim-card-back">
+                <div class="anim-card-back-glyph">✦</div>
+            </div>
+            <div class="anim-card-front anim-card-front--${card.rarity}">
+                <img src="${img}" class="anim-card-img" alt="${card.name}">
+                <div class="anim-card-label">
+                    <div class="anim-card-name">${card.name}</div>
+                    <div class="anim-card-badge anim-card-badge--${card.rarity}">${RARITY_LABEL[card.rarity] || card.rarity}</div>
+                </div>
+            </div>
+        </div>`;
+    return el;
+}
+
+async function animateCards(cards) {
+    // Title
+    animTitle.textContent = 'Нові карти!';
+    animTitle.className   = 'pack-anim-title';
+
+    // Build triangle: 2 top + 1 bottom
+    const topRow = document.createElement('div');
+    topRow.className = 'pack-tri-top';
+    const botRow = document.createElement('div');
+    botRow.className = 'pack-tri-bot';
+
+    const cardEls = cards.map((c, i) => makeCard(c, i));
+    if (cardEls[0]) topRow.appendChild(cardEls[0]);
+    if (cardEls[1]) topRow.appendChild(cardEls[1]);
+    if (cardEls[2]) botRow.appendChild(cardEls[2]);
+
+    animContent.appendChild(topRow);
+    animContent.appendChild(botRow);
+
+    // Drop cards in with stagger
+    await delay(120);
+    cardEls.forEach((el, i) => {
+        setTimeout(() => el.classList.add('anim-card--visible'), i * 130);
+    });
+    await delay(130 * cardEls.length + 280);
+
+    // Flip one by one
+    for (const el of cardEls) {
+        el.querySelector('.anim-card-inner').classList.add('flipped');
+        await delay(260);
+    }
+    await delay(180);
+
+    // Hammer reward
+    const rewardEl = document.createElement('div');
+    rewardEl.className = 'pack-hammer-reward';
+    rewardEl.innerHTML = `
+        <img src="${HAMMER_URL}" class="pack-hammer-icon" alt="">
+        <span class="pack-hammer-text">+1 молоток</span>`;
+    animReward.appendChild(rewardEl);
+
+    await delay(450);
+}
+
+async function animateCollectionFull() {
+    animTitle.textContent = 'Колекція повна!';
+    animTitle.className   = 'pack-anim-title pack-anim-title--gold';
+
+    // 3 hammer icons + ×3
+    const fullHammers = document.createElement('div');
+    fullHammers.className = 'pack-full-hammers';
+    fullHammers.innerHTML = `
+        <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
+        <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
+        <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">`;
+
+    const x3El = document.createElement('div');
+    x3El.className = 'pack-full-x3';
+    x3El.textContent = '×3';
+
+    animContent.appendChild(fullHammers);
+    animContent.appendChild(x3El);
+
+    // Hammers fall in staggered
+    await delay(100);
+    const hammerImgs = fullHammers.querySelectorAll('.pack-full-hammer');
+    hammerImgs.forEach((h, i) => {
+        setTimeout(() => h.classList.add('pack-full-hammer--visible'), i * 200);
+    });
+    await delay(200 * hammerImgs.length + 200);
+
+    // ×3 pops
+    x3El.classList.add('pack-full-x3--visible');
+    await delay(350);
+
+    // Sub text
+    const subEl = document.createElement('div');
+    subEl.className = 'pack-full-sub';
+    subEl.textContent = '+3 молотки замість карт';
+    animReward.appendChild(subEl);
+
+    await delay(380);
+}

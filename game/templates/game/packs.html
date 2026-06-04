@@ -31,9 +31,13 @@
 
 </div>
 
-<div class="pack-result-overlay" id="pack-info-overlay">
-    <div class="pack-result-box">
-        <div class="pack-result-title">Як це працює?</div>
+<!-- Flash effect -->
+<div class="pack-flash" id="pack-flash"></div>
+
+<!-- Info overlay -->
+<div class="pack-overlay" id="pack-info-overlay">
+    <div class="pack-overlay-box">
+        <div class="pack-overlay-title">Як це працює?</div>
         <div class="pack-info-text">
             Відкрий пак — і отримаєш <strong>3 випадкові карти</strong> у свою колекцію.<br><br>
             Кожна карта має рідкісність:<br>
@@ -44,22 +48,27 @@
             <span class="prc-rarity-dot dot-legendary">●</span> Легендарна<br><br>
             Збери всі 30 унікальних карт!
         </div>
-        <button class="pack-result-close" id="pack-info-close">Зрозуміло</button>
+        <button class="pack-overlay-close" id="pack-info-close">Зрозуміло</button>
     </div>
 </div>
 
-<div class="pack-result-overlay" id="pack-result-overlay">
-    <div class="pack-result-box">
-        <div class="pack-result-title">Нові карти!</div>
-        <div class="pack-result-cards" id="pack-result-cards"></div>
-        <button class="pack-result-close" id="pack-result-close">OK</button>
-    </div>
+<!-- Animation overlay (pack opening result) -->
+<div class="pack-anim-overlay" id="pack-anim-overlay">
+    <div class="pack-anim-title" id="pack-anim-title"></div>
+    <div class="pack-anim-content" id="pack-anim-content"></div>
+    <div class="pack-anim-reward" id="pack-anim-reward"></div>
+    <button class="pack-anim-close" id="pack-anim-close">OK</button>
 </div>
 {% endblock %}
 
 {% block page_js %}
 <script>
-    const OPEN_URL = "{% url 'open_pack' %}";
+    const OPEN_URL    = "{% url 'open_pack' %}";
+    const HAMMER_URL  = "{% static 'game/img/hummer.png' %}";
+    const CARD_IMAGES = [
+        "{% static 'game/img/card-sample.png' %}",
+        "{% static 'game/img/card-sample2.png' %}",
+    ];
 </script>
 <script src="{% static 'game/js/packs.js' %}"></script>
 {% endblock %}
