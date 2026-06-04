@@ -22,7 +22,7 @@ async def start(message: Message):
     await message.answer(
         f"👋 Добро пожаловать, {message.from_user.first_name}!\n\n"
         f"🎭 <b>Мафия</b> — классическая игра на доверие и обман.\n\n"
-        f"Нажми кнопку <b>🎮 Играть</b> слева от поля ввода 👇",
+        f"Нажми кнопку <b>🕵️‍♂️ Играть</b> слева от поля ввода 👇",
         parse_mode="HTML",
     )
 
@@ -31,7 +31,7 @@ async def main():
     await bot.set_my_commands([])
     await bot.set_chat_menu_button(
         menu_button=MenuButtonWebApp(
-            text="🎮 Играть",
+            text="🕵️‍♂️ Играть",
             web_app=WebAppInfo(url=WEBAPP_URL),
         )
     )
