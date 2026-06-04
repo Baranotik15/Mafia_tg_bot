@@ -47,6 +47,13 @@
     }
 
     function slotAt(x, y) {
+        // elementFromPoint pierces through scaled app correctly
+        const el = document.elementFromPoint(x, y);
+        if (el) {
+            const byPoint = el.closest('.slot-wrap');
+            if (byPoint) return byPoint;
+        }
+        // fallback: bounding rects
         for (const s of allSlots()) {
             const r = s.getBoundingClientRect();
             if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return s;
@@ -176,9 +183,10 @@
         const dx  = Math.abs(t.clientX - startX);
         const dy  = Math.abs(t.clientY - startY);
         const card = srcCard;
-        const slot = activeSlot;
 
         if (mode === 'dragging') {
+            // Re-check slot at the exact release position, fallback to last hovered
+            const slot = slotAt(t.clientX, t.clientY) || activeSlot;
             if (slot) placeInSlot(slot, card.querySelector('.inv-card-img').src);
             reset();
             return;
