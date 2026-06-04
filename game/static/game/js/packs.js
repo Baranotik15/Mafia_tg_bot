@@ -1,5 +1,17 @@
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+function showEnlargedCard(src) {
+    const overlay = document.createElement('div');
+    overlay.className = 'card-zoom-overlay';
+    overlay.innerHTML = `<button class="card-zoom-close">✕</button><img class="card-zoom-img" src="${src}" alt="">`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('active'));
+    overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 250);
+    });
+}
+
 const infoBtn      = document.getElementById('pack-info-btn');
 const infoOverlay  = document.getElementById('pack-info-overlay');
 const infoClose    = document.getElementById('pack-info-close');
@@ -137,6 +149,15 @@ async function animateCards(cards, hammersEarned) {
         await delay(260);
     }
     await delay(180);
+
+    // Tap to enlarge after flip
+    cardEls.forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+            const src = el.querySelector('.anim-card-img').src;
+            showEnlargedCard(src);
+        });
+    });
 
     // Hammer reward
     const rewardEl = document.createElement('div');

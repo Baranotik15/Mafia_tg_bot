@@ -193,15 +193,12 @@
         if (isDragging) return;
         if (!activeCard) return;
 
-        const dx = Math.abs(e.touches[0].clientX - touchStartX);
+        // Only cancel hold on clear vertical scroll, not small movements during hold
         const dy = Math.abs(e.touches[0].clientY - touchStartY);
-
-        if (dx > TAP_MAX_PX || dy > TAP_MAX_PX) {
-            cancelHold();
-        }
+        if (dy > 25) cancelHold();
     }, { passive: true });
 
-    blockCards.addEventListener('touchend', e => {
+    function handleTouchEnd(e) {
         const wasDragging = isDragging;
         const card = activeCard;
         const dt = Date.now() - touchStartT;
@@ -214,16 +211,14 @@
             if (hoveredSlot && dragSrc) dropIntoSlot(hoveredSlot, getImgSrc(dragSrc));
             cleanup();
         } else if (card && dt < TAP_MAX_MS && dx < TAP_MAX_PX && dy < TAP_MAX_PX) {
-            // Short tap → enlarge
             activeCard = null;
             showEnlargedCard(card);
         } else {
             activeCard = null;
         }
-    }, { passive: true });
+    }
 
-    blockCards.addEventListener('touchcancel', () => {
-        cancelHold();
-        cleanup();
-    }, { passive: true });
+    // Listen on document so drop works even when finger is above blockCards (over slots)
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', () => { cancelHold(); cleanup(); }, { passive: true });
 })();
