@@ -126,10 +126,12 @@
         const src = getImgSrc(card);
         const overlay = document.createElement('div');
         overlay.className = 'card-zoom-overlay';
-        overlay.innerHTML = `<img class="card-zoom-img" src="${src}" alt="">`;
+        overlay.innerHTML = `
+            <button class="card-zoom-close">✕</button>
+            <img class="card-zoom-img" src="${src}" alt="">`;
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('active'));
-        overlay.addEventListener('click', () => {
+        overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
             overlay.classList.remove('active');
             setTimeout(() => overlay.remove(), 250);
         });
