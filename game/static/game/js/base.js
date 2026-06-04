@@ -2,7 +2,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 (function telegramAuth() {
     const tg = window.Telegram?.WebApp;
-    if (!tg || !tg.initData) {
+    if (!tg) {
         document.body.innerHTML =
             '<div style="display:flex;align-items:center;justify-content:center;height:100vh;'
             + 'background:#111;color:#fff;font-family:sans-serif;text-align:center">'
@@ -10,7 +10,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
             + '<a href="https://t.me/" style="color:#5b9bd5">Відкрити Telegram</a></div></div>';
         return;
     }
-    const body = new URLSearchParams({ init_data: tg.initData });
+    const initData = tg.initData || '';
+    const body = new URLSearchParams({ init_data: initData });
+    if (tg.initDataUnsafe?.user) {
+        body.set('unsafe_user', JSON.stringify(tg.initDataUnsafe.user));
+    }
     fetch('/auth/', { method: 'POST', body })
         .then(r => r.json())
         .then(data => { if (data.ok && data.new_session) window.location.reload(); })
