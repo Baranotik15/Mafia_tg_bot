@@ -16,17 +16,17 @@
 
     <div class="packs-center">
         <div class="pack-bottle-wrap">
-            <img class="pack-bottle" src="{% static 'game/img/pucks/pack-bottle.png' %}" alt="пак">
+            <img class="pack-bottle" src="{% static 'game/img/pucks/pack-bottle.webp' %}" alt="пак">
             <span class="pack-count">x{{ pack_count }}</span>
         </div>
     </div>
 
     <div class="packs-actions">
         <div class="packs-icons-row">
-            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-add.png' %}"      alt="Додати">
-            <img class="pack-icon-btn" id="pack-info-btn" src="{% static 'game/img/pucks/pack-question.png' %}" alt="Інфо">
+            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-add.webp' %}"      alt="Додати">
+            <img class="pack-icon-btn" id="pack-info-btn" src="{% static 'game/img/pucks/pack-question.webp' %}" alt="Інфо">
         </div>
-        <img class="pack-open-btn" id="pack-open-btn" src="{% static 'game/img/pucks/pack-open.png' %}" alt="Відкрити пак">
+        <img class="pack-open-btn" id="pack-open-btn" src="{% static 'game/img/pucks/pack-open.webp' %}" alt="Відкрити пак">
     </div>
 
 </div>
@@ -64,7 +64,7 @@
 {% block page_js %}
 <script>
     const OPEN_URL   = "{% url 'open_pack' %}";
-    const HAMMER_URL = "{% static 'game/img/hummer.png' %}";
+    const HAMMER_URL = "{% static 'game/img/hummer.webp' %}";
     const CARTS_URL  = "{% static 'game/img/carts/' %}";
 </script>
 <script src="{% static 'game/js/packs.js' %}"></script>

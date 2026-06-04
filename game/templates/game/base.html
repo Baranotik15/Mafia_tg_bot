@@ -9,7 +9,7 @@
     {% block page_css %}{% endblock %}
     <style>
         :root {
-            --bg-image: url("{% static 'game/img/bg.png' %}");
+            --bg-image: url("{% static 'game/img/bg.webp' %}");
         }
     </style>
 </head>
@@ -20,17 +20,17 @@
 
         <nav class="bottom-nav">
             <a class="nav-btn {% block nav_packs %}{% endblock %}" href="{% url 'packs' %}">
-                <img src="{% static 'game/img/button/btn-packs.png' %}" alt="Паки">
+                <img src="{% static 'game/img/button/btn-packs.webp' %}" alt="Паки">
             </a>
             <a class="nav-btn {% block nav_collection %}{% endblock %}" href="{% url 'index' %}">
-                <img src="{% static 'game/img/button/btn-collection.png' %}" alt="Коллекция">
+                <img src="{% static 'game/img/button/btn-collection.webp' %}" alt="Коллекция">
             </a>
             <a class="nav-btn {% block nav_leaders %}{% endblock %}" href="{% url 'leaders' %}">
-                <img src="{% static 'game/img/button/btn-leaders.png' %}" alt="Лидеры">
+                <img src="{% static 'game/img/button/btn-leaders.webp' %}" alt="Лидеры">
             </a>
         </nav>
 
-        <img class="bg-frame-overlay" src="{% static 'game/img/bg-frame.png' %}" alt="">
+        <img class="bg-frame-overlay" src="{% static 'game/img/bg-frame.webp' %}" alt="">
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
