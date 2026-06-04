@@ -23,7 +23,8 @@ INSTALLED_APPS = [
     'game',
 ]
 
-BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+BOT_TOKEN  = os.getenv('BOT_TOKEN', '')
+ADMIN_IDS  = {int(x) for x in os.getenv('ADMIN_IDS', '').split(',') if x.strip()}
 
 _db_engine = os.getenv('DB_ENGINE', 'sqlite')
 
@@ -62,6 +63,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'game.context_processors.admin_context',
             ],
         },
     },

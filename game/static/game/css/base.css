@@ -99,3 +99,29 @@ html, body {
 .nav-btn.pressing img {
     filter: drop-shadow(0 0 14px rgba(212,168,75,1)) drop-shadow(0 0 6px rgba(255,220,80,0.7));
 }
+
+.imafia-btn {
+    height: 56px;
+    width: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #e8392a, #a01a0e);
+    border: 2px solid rgba(255,100,80,0.6);
+    box-shadow: 0 0 14px rgba(220,50,30,0.7), 0 2px 8px rgba(0,0,0,0.6);
+    flex-shrink: 0;
+}
+
+.imafia-label {
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 13px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    letter-spacing: 0.5px;
+    pointer-events: none;
+}
+
+.imafia-btn:active,
+.imafia-btn.pressing {
+    transform: scale(1.12);
+    box-shadow: 0 0 22px rgba(220,50,30,0.9);
+}

@@ -89,6 +89,10 @@ def index(request):
     })
 
 
+def admin_events(request):
+    return render(request, 'game/admin_events.html')
+
+
 def packs(request):
     player = get_current_player(request)
     pack_count = player.packs if player else 0
