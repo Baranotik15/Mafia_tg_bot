@@ -90,7 +90,7 @@ animClose.addEventListener('click', () => {
 });
 
 function makeCard(card) {
-    const img = CARTS_URL + card.slug + '.png';
+    const img = CARTS_URL + card.slug + '.webp';
     const el = document.createElement('div');
     el.className = 'anim-card';
     el.innerHTML = `

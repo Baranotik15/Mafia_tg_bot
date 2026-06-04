@@ -48,7 +48,7 @@
         <div class="inv-grid">
             {% for card in inventory_cards %}
             <div class="inv-card" data-slug="{{ card.slug }}" data-rarity="{{ card.rarity }}">
-                <img class="inv-card-img" draggable="false" src="{% static 'game/img/carts/' %}{{ card.slug }}.png" alt="{{ card.name }}">
+                <img class="inv-card-img" draggable="false" src="{% static 'game/img/carts/' %}{{ card.slug }}.webp" alt="{{ card.name }}">
             </div>
             {% endfor %}
         </div>
