@@ -29,9 +29,7 @@
                 <img src="{% static 'game/img/button/btn-leaders.webp' %}" alt="Лидеры">
             </a>
             {% if is_admin %}
-            <a class="nav-btn imafia-btn" href="{% url 'admin_events' %}">
-                <span class="imafia-label">iMafia</span>
-            </a>
+            <a class="nav-btn imafia-btn" href="{% url 'admin_events' %}"></a>
             {% endif %}
         </nav>
 
