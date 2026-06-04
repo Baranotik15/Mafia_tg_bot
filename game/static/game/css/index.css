@@ -205,7 +205,11 @@
     padding-bottom: 8px;
     position: relative;
     z-index: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
+
+.block-cards::-webkit-scrollbar { display: none; }
 
 .inv-empty {
     display: flex;
