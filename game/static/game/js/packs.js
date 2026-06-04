@@ -72,7 +72,7 @@ openBtn.addEventListener('click', async () => {
     if (data.collection_full) {
         await animateCollectionFull();
     } else {
-        await animateCards(data.cards);
+        await animateCards(data.cards, data.hammers_earned);
     }
 
     animClose.style.opacity      = '1';
@@ -105,7 +105,7 @@ function makeCard(card) {
     return el;
 }
 
-async function animateCards(cards) {
+async function animateCards(cards, hammersEarned) {
     // Title
     animTitle.textContent = 'Нові карти!';
     animTitle.className   = 'pack-anim-title';
@@ -141,9 +141,10 @@ async function animateCards(cards) {
     // Hammer reward
     const rewardEl = document.createElement('div');
     rewardEl.className = 'pack-hammer-reward';
+    const hammerWord = hammersEarned === 1 ? 'молоток' : 'молотки';
     rewardEl.innerHTML = `
         <img src="${HAMMER_URL}" class="pack-hammer-icon" alt="">
-        <span class="pack-hammer-text">+1 молоток</span>`;
+        <span class="pack-hammer-text">+${hammersEarned} ${hammerWord}</span>`;
     animReward.appendChild(rewardEl);
 
     await delay(450);

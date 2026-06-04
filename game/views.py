@@ -141,11 +141,14 @@ def open_pack(request):
 
     drawn = random.sample(available, min(CARDS_PER_PACK, len(available)))
     player.collected_cards.add(*drawn)
-    player.hammers += 1
+    missing = CARDS_PER_PACK - len(drawn)
+    hammers_earned = 1 + missing
+    player.hammers += hammers_earned
     player.save(update_fields=['packs', 'hammers'])
     return JsonResponse({
         'packs_left': player.packs,
         'hammers': player.hammers,
+        'hammers_earned': hammers_earned,
         'cards': [{'slug': c.slug} for c in drawn],
         'collection_full': False,
     })
