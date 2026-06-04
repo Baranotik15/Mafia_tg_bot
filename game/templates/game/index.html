@@ -21,15 +21,14 @@
     </div>
 
     <div class="block-top">
-        {% for slot in active_slots %}
-        <div class="slot-wrap" data-occupied="{% if slot %}true{% else %}false{% endif %}">
-            <span class="slot-num">{% if slot %}x{{ slot.value }}{% else %}—{% endif %}</span>
-            <div class="card-slot {% if slot %}card-slot--{{ slot.frame }}{% endif %}">
-                {% if slot %}
-                <img class="slot-img" src="{% static 'game/img/carts/' %}{{ slot.slug }}.png" alt="{{ slot.name }}">
-                {% if slot.frame == 'bronze' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-bronze.png' %}" alt="">
-                {% elif slot.frame == 'silver' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-silver.png' %}" alt="">
-                {% elif slot.frame == 'gold' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-gold.png' %}" alt="">{% endif %}
+        {% for slot_data in slots %}
+        <div class="slot-wrap {% if slot_data.card %}slot-occupied{% endif %}"
+             data-position="{{ slot_data.position }}"
+             data-occupied="{% if slot_data.card %}true{% else %}false{% endif %}">
+            <span class="slot-num">{{ slot_data.position }}</span>
+            <div class="card-slot">
+                {% if slot_data.card %}
+                <img class="slot-img" src="{% static 'game/img/carts/' %}{{ slot_data.card.slug }}.webp" alt="">
                 {% endif %}
             </div>
         </div>
@@ -47,8 +46,8 @@
         {% if inventory_cards %}
         <div class="inv-grid">
             {% for card in inventory_cards %}
-            <div class="inv-card" data-slug="{{ card.slug }}" data-rarity="{{ card.rarity }}">
-                <img class="inv-card-img" draggable="false" src="{% static 'game/img/carts/' %}{{ card.slug }}.webp" alt="{{ card.name }}">
+            <div class="inv-card" data-slug="{{ card.slug }}">
+                <img class="inv-card-img" draggable="false" src="{% static 'game/img/carts/' %}{{ card.slug }}.webp" alt="{{ card.slug }}">
             </div>
             {% endfor %}
         </div>
@@ -59,5 +58,9 @@
 {% endblock %}
 
 {% block page_js %}
+    <script>
+        const SET_SLOT_URL   = "{% url 'set_slot' %}";
+        const CLEAR_SLOT_URL = "{% url 'clear_slot' %}";
+    </script>
     <script src="{% static 'game/js/index.js' %}"></script>
 {% endblock %}

@@ -1,13 +1,13 @@
 (function () {
     const TAP_MAX_MS = 200;
     const TAP_MAX_PX = 10;
-    const HOLD_MS    = 180; // two stages: 180ms charge + 180ms activate = 360ms total
+    const HOLD_MS    = 180;
 
     // ── State ──
-    let mode      = 'idle'; // idle | holding | dragging
-    let holdTimer = null;
-    let srcCard   = null;
-    let ghost     = null;
+    let mode       = 'idle'; // idle | holding | dragging
+    let holdTimer  = null;
+    let srcCard    = null;
+    let ghost      = null;
     let activeSlot = null;
     let startX = 0, startY = 0, startT = 0;
 
@@ -47,13 +47,6 @@
     }
 
     function slotAt(x, y) {
-        // elementFromPoint pierces through scaled app correctly
-        const el = document.elementFromPoint(x, y);
-        if (el) {
-            const byPoint = el.closest('.slot-wrap');
-            if (byPoint) return byPoint;
-        }
-        // fallback: bounding rects
         for (const s of allSlots()) {
             const r = s.getBoundingClientRect();
             if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return s;
@@ -65,15 +58,74 @@
         allSlots().forEach(s => s.classList.toggle('slot-drop-hover', s === target));
     }
 
-    function placeInSlot(slot, imgSrc) {
+    // ── API: place card in slot ──
+    async function apiSetSlot(position, slug) {
+        const res = await fetch(SET_SLOT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position, slug }),
+        });
+        return res.json();
+    }
+
+    // ── API: clear slot ──
+    async function apiClearSlot(position) {
+        const res = await fetch(CLEAR_SLOT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position }),
+        });
+        return res.json();
+    }
+
+    // ── Place card visually in slot ──
+    function renderSlot(slotWrap, imgSrc) {
+        const cardSlot = slotWrap.querySelector('.card-slot');
+        cardSlot.innerHTML = `<img class="slot-img" src="${imgSrc}" alt="">`;
+        slotWrap.dataset.occupied = 'true';
+        slotWrap.classList.add('slot-occupied');
+    }
+
+    // ── Clear slot visually ──
+    function clearSlotRender(slotWrap) {
+        const cardSlot = slotWrap.querySelector('.card-slot');
+        cardSlot.innerHTML = '';
+        slotWrap.dataset.occupied = 'false';
+        slotWrap.classList.remove('slot-occupied');
+    }
+
+    // ── Drop card into slot (via API) ──
+    async function dropIntoSlot(slotWrap, slug, imgSrc) {
         if (hammerCount <= 0) { rejectHammer(); return; }
-        const cardSlot = slot.querySelector('.card-slot');
-        if (!cardSlot) return;
-        cardSlot.innerHTML = `<img src="${imgSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;display:block;">`;
-        slot.dataset.occupied = 'true';
-        hammerCount--;
-        updateHammerUI();
-        swingHammer();
+        const position = parseInt(slotWrap.dataset.position);
+        const data = await apiSetSlot(position, slug);
+        if (data.ok) {
+            renderSlot(slotWrap, imgSrc);
+            hammerCount = data.hammers;
+            updateHammerUI();
+            swingHammer();
+        } else if (data.error === 'no_hammers') {
+            rejectHammer();
+        } else if (data.error === 'slot_occupied') {
+            // slot already taken — shake it
+            slotWrap.classList.add('rejecting');
+            setTimeout(() => slotWrap.classList.remove('rejecting'), 450);
+        }
+    }
+
+    // ── Tap on occupied slot → clear it ──
+    async function tapClearSlot(slotWrap) {
+        if (hammerCount <= 0) { rejectHammer(); return; }
+        const position = parseInt(slotWrap.dataset.position);
+        const data = await apiClearSlot(position);
+        if (data.ok) {
+            clearSlotRender(slotWrap);
+            hammerCount = data.hammers;
+            updateHammerUI();
+            swingHammer();
+        } else if (data.error === 'no_hammers') {
+            rejectHammer();
+        }
     }
 
     // ── Ghost ──
@@ -118,13 +170,21 @@
         destroyGhost();
         highlightSlot(null);
         activeSlot = null;
-        srcCard = null;
-        mode = 'idle';
+        srcCard    = null;
+        mode       = 'idle';
     }
 
     // ── Touch: start ──
     document.addEventListener('touchstart', e => {
         if (mode !== 'idle') return;
+
+        // Tap on occupied slot → clear it
+        const slotTap = e.target.closest('.slot-wrap');
+        if (slotTap && slotTap.dataset.occupied === 'true') {
+            tapClearSlot(slotTap);
+            return;
+        }
+
         const card = e.target.closest('.inv-card');
         if (!card || !blockCards.contains(card)) return;
 
@@ -156,8 +216,8 @@
         const dy = Math.abs(t.clientY - startY);
 
         if (mode === 'holding') {
-            if (dy > 22) { reset(); return; } // clear vertical scroll → cancel
-            e.preventDefault();               // otherwise block scroll while holding
+            if (dy > 22) { reset(); return; }
+            e.preventDefault();
             return;
         }
 
@@ -172,21 +232,26 @@
     // ── Touch: end ──
     document.addEventListener('touchend', e => {
         if (mode === 'idle') return;
-        const t   = e.changedTouches[0];
-        const dt  = Date.now() - startT;
-        const dx  = Math.abs(t.clientX - startX);
-        const dy  = Math.abs(t.clientY - startY);
+        const t  = e.changedTouches[0];
+        const dt = Date.now() - startT;
+        const dx = Math.abs(t.clientX - startX);
+        const dy = Math.abs(t.clientY - startY);
         const card = srcCard;
 
         if (mode === 'dragging') {
-            // Re-check slot at the exact release position, fallback to last hovered
             const slot = slotAt(t.clientX, t.clientY) || activeSlot;
-            if (slot) placeInSlot(slot, card.querySelector('.inv-card-img').src);
-            reset();
+            const occupied = slot?.dataset.occupied === 'true';
+            if (slot && !occupied) {
+                const slug   = card.dataset.slug;
+                const imgSrc = card.querySelector('.inv-card-img').src;
+                reset();
+                dropIntoSlot(slot, slug, imgSrc);
+            } else {
+                reset();
+            }
             return;
         }
 
-        // holding — check tap
         if (dt < TAP_MAX_MS && dx < TAP_MAX_PX && dy < TAP_MAX_PX) {
             reset();
             showZoom(card);
@@ -196,7 +261,6 @@
         reset();
     }, { passive: true });
 
-    // ── Touch: cancel ──
     document.addEventListener('touchcancel', reset, { passive: true });
 
     // ── Desktop drag (HTML5) ──
@@ -226,7 +290,10 @@
         wrap.addEventListener('drop', e => {
             e.preventDefault();
             highlightSlot(null);
-            if (srcCard) placeInSlot(wrap, srcCard.querySelector('.inv-card-img').src);
+            if (!srcCard || wrap.dataset.occupied === 'true') return;
+            const slug   = srcCard.dataset.slug;
+            const imgSrc = srcCard.querySelector('.inv-card-img').src;
+            dropIntoSlot(wrap, slug, imgSrc);
         });
     });
 })();

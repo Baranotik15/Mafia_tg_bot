@@ -74,11 +74,14 @@ def get_current_player(request):
 def index(request):
     player = get_current_player(request)
     inventory_cards = list(player.collected_cards.all()) if player else []
-    active_slots = [None, None, None]
     hammer_count = player.hammers if player else 0
+    slots = []
+    for i in [1, 2, 3]:
+        card = getattr(player, f'slot{i}') if player else None
+        slots.append({'position': i, 'card': card})
     return render(request, 'game/index.html', {
         'inventory_cards': inventory_cards,
-        'active_slots': active_slots,
+        'slots': slots,
         'hammer_count': hammer_count,
     })
 
@@ -110,6 +113,51 @@ def leaders(request):
         'rest': rest,
         'current_player': current_player,
     })
+
+
+@csrf_exempt
+@require_POST
+def set_slot(request):
+    player = get_current_player(request)
+    if not player:
+        return JsonResponse({'error': 'player_not_found'}, status=404)
+    data = json.loads(request.body)
+    position = data.get('position')
+    slug = data.get('slug')
+    if position not in [1, 2, 3]:
+        return JsonResponse({'error': 'invalid_position'}, status=400)
+    try:
+        card = player.collected_cards.get(slug=slug)
+    except Card.DoesNotExist:
+        return JsonResponse({'error': 'card_not_in_collection'}, status=400)
+    if getattr(player, f'slot{position}') is not None:
+        return JsonResponse({'error': 'slot_occupied'}, status=400)
+    if player.hammers <= 0:
+        return JsonResponse({'error': 'no_hammers'}, status=400)
+    setattr(player, f'slot{position}', card)
+    player.hammers -= 1
+    player.save(update_fields=[f'slot{position}', 'hammers'])
+    return JsonResponse({'ok': True, 'hammers': player.hammers})
+
+
+@csrf_exempt
+@require_POST
+def clear_slot(request):
+    player = get_current_player(request)
+    if not player:
+        return JsonResponse({'error': 'player_not_found'}, status=404)
+    data = json.loads(request.body)
+    position = data.get('position')
+    if position not in [1, 2, 3]:
+        return JsonResponse({'error': 'invalid_position'}, status=400)
+    if getattr(player, f'slot{position}') is None:
+        return JsonResponse({'error': 'slot_empty'}, status=400)
+    if player.hammers <= 0:
+        return JsonResponse({'error': 'no_hammers'}, status=400)
+    setattr(player, f'slot{position}', None)
+    player.hammers -= 1
+    player.save(update_fields=[f'slot{position}', 'hammers'])
+    return JsonResponse({'ok': True, 'hammers': player.hammers})
 
 
 CARDS_PER_PACK = 3

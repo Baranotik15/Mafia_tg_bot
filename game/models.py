@@ -15,6 +15,9 @@ class Player(models.Model):
     packs           = models.IntegerField(default=1)
     hammers         = models.IntegerField(default=5)
     collected_cards = models.ManyToManyField(Card, blank=True, related_name='owners')
+    slot1           = models.ForeignKey(Card, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    slot2           = models.ForeignKey(Card, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    slot3           = models.ForeignKey(Card, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
 
     class Meta:
         ordering = ['-score']
