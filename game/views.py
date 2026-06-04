@@ -146,6 +146,6 @@ def open_pack(request):
     return JsonResponse({
         'packs_left': player.packs,
         'hammers': player.hammers,
-        'cards': [{'name': c.name, 'rarity': c.rarity, 'slug': c.slug} for c in drawn],
+        'cards': [{'slug': c.slug} for c in drawn],
         'collection_full': False,
     })

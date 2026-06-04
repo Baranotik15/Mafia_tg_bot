@@ -1,10 +1,5 @@
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
-const RARITY_LABEL = {
-    common: 'Звичайна', uncommon: 'Незвична',
-    rare: 'Рідкісна', epic: 'Епічна', legendary: 'Легендарна',
-};
-
 const infoBtn      = document.getElementById('pack-info-btn');
 const infoOverlay  = document.getElementById('pack-info-overlay');
 const infoClose    = document.getElementById('pack-info-close');
@@ -94,7 +89,7 @@ animClose.addEventListener('click', () => {
     delete openBtn.dataset.busy;
 });
 
-function makeCard(card, index) {
+function makeCard(card) {
     const img = CARTS_URL + card.slug + '.png';
     const el = document.createElement('div');
     el.className = 'anim-card';
@@ -103,12 +98,8 @@ function makeCard(card, index) {
             <div class="anim-card-back">
                 <div class="anim-card-back-glyph">✦</div>
             </div>
-            <div class="anim-card-front anim-card-front--${card.rarity}">
-                <img src="${img}" class="anim-card-img" alt="${card.name}">
-                <div class="anim-card-label">
-                    <div class="anim-card-name">${card.name}</div>
-                    <div class="anim-card-badge anim-card-badge--${card.rarity}">${RARITY_LABEL[card.rarity] || card.rarity}</div>
-                </div>
+            <div class="anim-card-front">
+                <img src="${img}" class="anim-card-img" alt="">
             </div>
         </div>`;
     return el;
@@ -125,7 +116,7 @@ async function animateCards(cards) {
     const botRow = document.createElement('div');
     botRow.className = 'pack-tri-bot';
 
-    const cardEls = cards.map((c, i) => makeCard(c, i));
+    const cardEls = cards.map(c => makeCard(c));
     if (cardEls[0]) topRow.appendChild(cardEls[0]);
     if (cardEls[1]) topRow.appendChild(cardEls[1]);
     if (cardEls[2]) botRow.appendChild(cardEls[2]);
