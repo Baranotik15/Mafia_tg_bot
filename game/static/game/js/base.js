@@ -1,5 +1,15 @@
 document.addEventListener('contextmenu', e => e.preventDefault());
 
+(function telegramAuth() {
+    const tg = window.Telegram?.WebApp;
+    if (!tg || !tg.initData) return;
+    const body = new URLSearchParams({ init_data: tg.initData });
+    fetch('/auth/', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => { if (data.ok && data.new_session) window.location.reload(); })
+        .catch(() => {});
+})();
+
 (function scaleApp() {
     const app = document.querySelector('.app');
     if (!app) return;

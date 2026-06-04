@@ -18,9 +18,12 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
     'game',
 ]
+
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 
 _db_engine = os.getenv('DB_ENGINE', 'sqlite')
 
@@ -45,7 +48,9 @@ else:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'game.middleware.TelegramAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'mafia_web.urls'
