@@ -38,7 +38,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      test: ["CMD", "python", "-c", "import urllib.request, urllib.error;\ntry: urllib.request.urlopen('http://localhost:8000/')\nexcept urllib.error.HTTPError as e: exit(0 if e.code == 403 else 1)"]
       interval: 5s
       timeout: 5s
       retries: 10
