@@ -95,7 +95,7 @@ animClose.addEventListener('click', () => {
 });
 
 function makeCard(card, index) {
-    const img = CARD_IMAGES[index % CARD_IMAGES.length];
+    const img = CARTS_URL + card.slug + '.png';
     const el = document.createElement('div');
     el.className = 'anim-card';
     el.innerHTML = `

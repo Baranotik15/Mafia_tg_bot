@@ -63,12 +63,9 @@
 
 {% block page_js %}
 <script>
-    const OPEN_URL    = "{% url 'open_pack' %}";
-    const HAMMER_URL  = "{% static 'game/img/hummer.png' %}";
-    const CARD_IMAGES = [
-        "{% static 'game/img/card-sample.png' %}",
-        "{% static 'game/img/card-sample2.png' %}",
-    ];
+    const OPEN_URL   = "{% url 'open_pack' %}";
+    const HAMMER_URL = "{% static 'game/img/hummer.png' %}";
+    const CARTS_URL  = "{% static 'game/img/carts/' %}";
 </script>
 <script src="{% static 'game/js/packs.js' %}"></script>
 {% endblock %}

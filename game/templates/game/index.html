@@ -26,7 +26,7 @@
             <span class="slot-num">{% if slot %}x{{ slot.value }}{% else %}—{% endif %}</span>
             <div class="card-slot {% if slot %}card-slot--{{ slot.frame }}{% endif %}">
                 {% if slot %}
-                <img class="slot-img" src="{% static 'game/img/card-sample.png' %}" alt="{{ slot.name }}">
+                <img class="slot-img" src="{% static 'game/img/carts/' %}{{ slot.slug }}.png" alt="{{ slot.name }}">
                 {% if slot.frame == 'bronze' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-bronze.png' %}" alt="">
                 {% elif slot.frame == 'silver' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-silver.png' %}" alt="">
                 {% elif slot.frame == 'gold' %}<img class="slot-frame" src="{% static 'game/img/frames/frame-gold.png' %}" alt="">{% endif %}
@@ -48,11 +48,7 @@
         <div class="inv-grid">
             {% for card in inventory_cards %}
             <div class="inv-card" data-slug="{{ card.slug }}" data-rarity="{{ card.rarity }}">
-                {% if forloop.counter|divisibleby:2 %}
-                <img class="inv-card-img" draggable="false" src="{% static 'game/img/card-sample2.png' %}" alt="{{ card.name }}">
-                {% else %}
-                <img class="inv-card-img" draggable="false" src="{% static 'game/img/card-sample.png' %}" alt="{{ card.name }}">
-                {% endif %}
+                <img class="inv-card-img" draggable="false" src="{% static 'game/img/carts/' %}{{ card.slug }}.png" alt="{{ card.name }}">
             </div>
             {% endfor %}
         </div>
