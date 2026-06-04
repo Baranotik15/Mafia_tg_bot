@@ -102,8 +102,8 @@ html, body {
 
 .imafia-btn {
     position: absolute;
-    right: 4px;
-    bottom: 8px;
+    right: 8px;
+    bottom: 14px;
     height: 52px;
     width: 52px;
     background: #000;
