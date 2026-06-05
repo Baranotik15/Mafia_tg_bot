@@ -27,7 +27,7 @@
 
             const scoreEl = document.createElement('div');
             scoreEl.className = 'card-row-score';
-            scoreEl.textContent = '+' + card.score + ' за раз';
+            scoreEl.textContent = '+' + card.score + ' балів';
 
             const counter = document.createElement('div');
             counter.className = 'counter';
