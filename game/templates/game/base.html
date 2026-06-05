@@ -37,6 +37,21 @@
     </div>
 
     <script>
+        (function() {
+            var srcs = [
+                "{% static 'game/img/carts/executioner.webp' %}",
+                "{% static 'game/img/carts/dry_win.webp' %}",
+                "{% static 'game/img/carts/sheriff_kill.webp' %}",
+                "{% static 'game/img/carts/three_on_three.webp' %}",
+                "{% static 'game/img/carts/know_the_pain.webp' %}",
+                "{% static 'game/img/carts/handsome.webp' %}",
+                "{% static 'game/img/carts/Texas_Massacre.webp' %}",
+                "{% static 'game/img/carts/finally.webp' %}",
+            ];
+            srcs.forEach(function(src) { (new Image()).src = src; });
+        })();
+    </script>
+    <script>
         const CARD_SOUNDS = {
             'dry_win':        new Audio("{% static 'game/music/cart_sound/dry_win.mp3' %}"),
             'three_on_three': new Audio("{% static 'game/music/cart_sound/three_on_three.mp3' %}"),
