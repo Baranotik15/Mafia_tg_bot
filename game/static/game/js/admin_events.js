@@ -171,6 +171,10 @@
 
     backBtn.addEventListener('click', closeEvent);
 
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && detail.classList.contains('active')) closeEvent();
+    });
+
     // ── Start ──
     startBtn.addEventListener('click', function () {
         startBtn.disabled = true;

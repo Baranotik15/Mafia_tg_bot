@@ -262,6 +262,12 @@
 
     document.addEventListener('touchcancel', reset, { passive: true });
 
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        const zoom = document.querySelector('.card-zoom-overlay');
+        if (zoom) { zoom.classList.remove('active'); setTimeout(() => zoom.remove(), 250); }
+    });
+
     // ── Desktop drag ──
     function attachDesktopDrag(card) {
         card.draggable = true;

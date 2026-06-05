@@ -27,7 +27,8 @@ function initPromo() {
         if (e.target === promoOverlay) closePromo();
     });
     promoInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') promoSubmit.click();
+        if (e.key === 'Enter')  promoSubmit.click();
+        if (e.key === 'Escape') closePromo();
     });
 
     promoSubmit.addEventListener('click', async () => {
@@ -283,3 +284,11 @@ async function animateCollectionFull() {
 
     await delay(380);
 }
+
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (infoOverlay.classList.contains('active')) { infoOverlay.classList.remove('active'); return; }
+    if (animOverlay.classList.contains('active') && animClose.style.pointerEvents !== 'none') { animClose.click(); return; }
+    const zoom = document.querySelector('.card-zoom-overlay');
+    if (zoom) { zoom.classList.remove('active'); setTimeout(() => zoom.remove(), 250); }
+});
