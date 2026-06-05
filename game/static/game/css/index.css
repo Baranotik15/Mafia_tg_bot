@@ -129,12 +129,17 @@
     text-shadow: 0 0 10px rgba(245,197,24,0.7), 0 1px 4px rgba(0,0,0,0.8);
 }
 
+.slot-num--spacer {
+    visibility: hidden;
+    font-size: 16px;
+}
+
 .slot-btn-wrap {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 6px;
-    margin-top: 14px;
+    margin-top: 22px;
     margin-bottom: -8px;
     isolation: isolate;
 }
