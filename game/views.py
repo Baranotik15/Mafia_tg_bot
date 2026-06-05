@@ -1,8 +1,15 @@
+import glob
 import hashlib
 import hmac
 import json
+import logging
+import os
 import random
+import shutil
+from datetime import datetime
 from urllib.parse import parse_qsl, unquote
+
+logger = logging.getLogger('game.events')
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -11,6 +18,36 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .models import Card, EventResult, Player
+
+BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
+MAX_BACKUPS = 10
+
+
+def _make_backup():
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    db = settings.DATABASES['default']
+    now = datetime.now()
+    stamp = f'{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}'
+
+    if 'sqlite' in db['ENGINE']:
+        src = str(db['NAME'])
+        dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sqlite3')
+        shutil.copy2(src, dst)
+        pattern = os.path.join(BACKUP_DIR, 'backup_*.sqlite3')
+    elif 'postgresql' in db['ENGINE']:
+        dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sql')
+        env = os.environ.copy()
+        env['PGPASSWORD'] = db.get('PASSWORD', '')
+        os.system(
+            f"pg_dump -h {db['HOST']} -p {db['PORT']} -U {db['USER']} {db['NAME']} > \"{dst}\""
+        )
+        pattern = os.path.join(BACKUP_DIR, 'backup_*.sql')
+    else:
+        return
+
+    backups = sorted(glob.glob(pattern))
+    while len(backups) > MAX_BACKUPS:
+        os.remove(backups.pop(0))
 
 
 def _validate_init_data(init_data: str) -> dict | None:
@@ -110,6 +147,7 @@ def admin_events(request):
 @require_POST
 def finish_event(request):
     from django.db.models import Q
+    admin = get_current_player(request)
     data = json.loads(request.body)
     event_num = data.get('event')
     winners = data.get('winners', [])
@@ -133,6 +171,31 @@ def finish_event(request):
             awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
+
+    # Лог
+    admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
+    cards_lines = '\n'.join(
+        f'    • {Card.objects.get(slug=w["slug"]).name} × {w["count"]}'
+        for w in winners if Card.objects.filter(slug=w['slug']).exists()
+    )
+    if awarded:
+        players_map = {str(p.telegram_id): p.username for p in Player.objects.filter(
+            telegram_id__in=[int(k) for k in awarded])}
+        scores_lines = '\n'.join(
+            f'    • {players_map.get(tid, "?")} (ID: {tid}) → +{pts} балів'
+            for tid, pts in awarded.items()
+        )
+    else:
+        scores_lines = '    (жоден гравець не мав цих карток у слотах)'
+
+    logger.info(
+        f'ЗАВЕРШЕННЯ ПОДІЇ №{event_num}\n'
+        f'  Адмін: {admin_label}\n'
+        f'  Переможні картки:\n{cards_lines}\n'
+        f'  Нараховано балів:\n{scores_lines}\n'
+        f'  Всього отримали нарахування: {len(awarded)} гравців'
+    )
+    _make_backup()
     return JsonResponse({'ok': True, 'awarded': awarded})
 
 
@@ -140,15 +203,37 @@ def finish_event(request):
 @require_POST
 def cancel_event(request):
     from django.db.models import F
+    admin = get_current_player(request)
     data = json.loads(request.body)
     event_num = data.get('event')
     try:
         result = EventResult.objects.get(event_number=event_num)
     except EventResult.DoesNotExist:
         return JsonResponse({'error': 'not_found'}, status=404)
-    for tid_str, points in result.awards.items():
+
+    awards = result.awards
+    for tid_str, points in awards.items():
         Player.objects.filter(telegram_id=int(tid_str)).update(score=F('score') - points)
     result.delete()
+
+    # Лог
+    admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
+    if awards:
+        players_map = {str(p.telegram_id): p.username for p in Player.objects.filter(
+            telegram_id__in=[int(k) for k in awards])}
+        scores_lines = '\n'.join(
+            f'    • {players_map.get(tid, "?")} (ID: {tid}) → -{pts} балів'
+            for tid, pts in awards.items()
+        )
+    else:
+        scores_lines = '    (балів знято не було)'
+
+    logger.info(
+        f'СКАСУВАННЯ ПОДІЇ №{event_num}\n'
+        f'  Адмін: {admin_label}\n'
+        f'  Знято балів:\n{scores_lines}'
+    )
+    _make_backup()
     return JsonResponse({'ok': True})
 
 

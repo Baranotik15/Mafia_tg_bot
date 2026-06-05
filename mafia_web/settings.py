@@ -77,3 +77,37 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesSto
 
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
+
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'readable': {
+            'format': '[{asctime}] {message}',
+            'style': '{',
+            'datefmt': '%d.%m.%Y %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'events_file': {
+            'class': 'logging.FileHandler',
+            'filename': str(LOGS_DIR / 'events.log'),
+            'formatter': 'readable',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'readable',
+        },
+    },
+    'loggers': {
+        'game.events': {
+            'handlers': ['events_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
