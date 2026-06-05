@@ -9,7 +9,8 @@ CARDS = [
     {'slug': 'know_the_pain', 'name': 'Пізнай біль',     'score': 5, 'fixed_count': False},
     {'slug': 'handsome',       'name': 'Красень',        'score': 8, 'fixed_count': False},
     {'slug': 'Texas_Massacre', 'name': 'Техаська Різанина','score': 3, 'fixed_count': False},
-    {'slug': 'finally',        'name': 'Нарешті',         'score': 5, 'fixed_count': True},
+    {'slug': 'finally',        'name': 'Нарешті',        'score': 5, 'fixed_count': True},
+    {'slug': 'without_blast',  'name': 'Без баласту',    'score': 4, 'fixed_count': True},
 ]
 
 
