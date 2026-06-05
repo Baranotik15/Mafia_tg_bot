@@ -90,7 +90,34 @@ def index(request):
 
 
 def admin_events(request):
-    return render(request, 'game/admin_events.html')
+    cards = list(Card.objects.values('slug', 'name', 'score', 'fixed_count'))
+    return render(request, 'game/admin_events.html', {
+        'event_range': range(1, 17),
+        'cards_json': json.dumps(cards, ensure_ascii=False),
+    })
+
+
+@csrf_exempt
+@require_POST
+def finish_event(request):
+    from django.db.models import Q
+    data = json.loads(request.body)
+    winners = data.get('winners', [])
+    awarded = {}
+    for item in winners:
+        slug = item.get('slug')
+        count = max(1, int(item.get('count', 1)))
+        try:
+            card = Card.objects.get(slug=slug)
+        except Card.DoesNotExist:
+            continue
+        points = card.score * count
+        players = Player.objects.filter(Q(slot1=card) | Q(slot2=card) | Q(slot3=card))
+        for player in players:
+            player.score += points
+            player.save(update_fields=['score'])
+            awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
+    return JsonResponse({'ok': True, 'awarded': awarded})
 
 
 def packs(request):

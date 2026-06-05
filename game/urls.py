@@ -10,4 +10,5 @@ urlpatterns = [
     path('admin-events/', views.admin_events, name='admin_events'),
     path('slot/set/', views.set_slot, name='set_slot'),
     path('slot/clear/', views.clear_slot, name='clear_slot'),
+    path('event/finish/', views.finish_event, name='finish_event'),
 ]

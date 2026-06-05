@@ -2,10 +2,14 @@ from django.db import models
 
 
 class Card(models.Model):
-    slug = models.SlugField(max_length=64, unique=True)
+    slug        = models.SlugField(max_length=64, unique=True)
+    name        = models.CharField(max_length=128, default='')
+    score       = models.IntegerField(default=1)
+    fixed_count = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.slug
+        fixed = 'фіксовано' if self.fixed_count else 'змінний'
+        return f'[{self.slug}] {self.name or "—"} | очки: {self.score} | лічильник: {fixed}'
 
 
 class Player(models.Model):

@@ -1,14 +1,42 @@
 {% extends 'game/base.html' %}
+{% load static %}
 
-{% block title %}События — Мафия{% endblock %}
+{% block title %}Події — Мафія{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'game/css/admin_events.css' %}">
+{% endblock %}
 
 {% block content %}
-<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:32px;">
-    <div style="font-family:'Palatino Linotype',Georgia,serif;font-size:26px;font-weight:900;color:#d4a84b;text-shadow:0 0 20px rgba(201,162,39,0.5);text-align:center;">
-        iMafia
-    </div>
-    <div style="font-family:'Palatino Linotype',Georgia,serif;font-size:16px;color:rgba(201,162,39,0.5);text-align:center;line-height:1.6;">
-        Тут будуть події
+<div class="events-container">
+    <div class="events-title">iMafia</div>
+    <div class="events-grid">
+        {% for i in event_range %}
+        <div class="event-card" data-event="{{ i }}">
+            <div class="event-number">{{ i }}</div>
+            <div class="event-name">Подія {{ i }}</div>
+        </div>
+        {% endfor %}
     </div>
 </div>
+
+<div class="event-detail" id="eventDetail">
+    <div class="event-detail-header">
+        <button class="event-detail-back" id="eventDetailBack">&#8592;</button>
+        <div class="event-detail-title" id="eventDetailTitle"></div>
+    </div>
+    <div class="event-detail-body" id="eventDetailBody"></div>
+    <div class="event-detail-footer">
+        <button class="finish-event-btn" id="finishEventBtn">Закінчити подію</button>
+    </div>
+</div>
+
+<script>
+    const CARDS = {{ cards_json|safe }};
+    const FINISH_URL = "{% url 'finish_event' %}";
+</script>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'game/js/admin_events.js' %}"></script>
 {% endblock %}
