@@ -14,6 +14,26 @@
     const started    = Object.assign({}, STARTED);
     let toastTimer   = null;
 
+    function showCardZoom(slug) {
+        const overlay = document.createElement('div');
+        overlay.className = 'ev-card-zoom';
+        overlay.innerHTML =
+            '<button class="ev-card-zoom-close">✕</button>' +
+            '<img class="ev-card-zoom-img" src="' + CARTS_URL + slug + '.webp" alt="">';
+        document.body.appendChild(overlay);
+        requestAnimationFrame(function () { overlay.classList.add('active'); });
+        overlay.querySelector('.ev-card-zoom-close').addEventListener('click', function () {
+            overlay.classList.remove('active');
+            setTimeout(function () { overlay.remove(); }, 250);
+        });
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                setTimeout(function () { overlay.remove(); }, 250);
+            }
+        });
+    }
+
     function showToast(msg) {
         let toast = document.getElementById('evToast');
         if (!toast) {
@@ -79,6 +99,12 @@
             nameEl.className = 'card-row-name';
             nameEl.textContent = card.name || card.slug;
 
+            const infoBtn = document.createElement('button');
+            infoBtn.className = 'card-info-btn';
+            infoBtn.textContent = 'i';
+            infoBtn.type = 'button';
+            infoBtn.addEventListener('click', function () { showCardZoom(card.slug); });
+
             const scoreEl = document.createElement('div');
             scoreEl.className = 'card-row-score';
             scoreEl.textContent = '+' + (card.score * count) + ' балів';
@@ -117,6 +143,7 @@
             counter.appendChild(plus);
             row.appendChild(cb);
             row.appendChild(nameEl);
+            row.appendChild(infoBtn);
             row.appendChild(scoreEl);
             row.appendChild(counter);
             body.appendChild(row);
@@ -171,8 +198,11 @@
 
     backBtn.addEventListener('click', closeEvent);
 
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && detail.classList.contains('active')) closeEvent();
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        var zoom = document.querySelector('.ev-card-zoom');
+        if (zoom) { zoom.classList.remove('active'); setTimeout(function () { zoom.remove(); }, 250); return; }
+        if (detail.classList.contains('active')) closeEvent();
     });
 
     // ── Start ──

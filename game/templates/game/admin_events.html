@@ -36,6 +36,7 @@
 
 <script>
     const CARDS            = {{ cards_json|safe }};
+    const CARTS_URL        = "{% static 'game/img/carts/' %}";
     const COMPLETED        = {{ completed_json|safe }};
     const STARTED          = {{ started_json|safe }};
     const START_URL             = "{% url 'start_event' %}";
