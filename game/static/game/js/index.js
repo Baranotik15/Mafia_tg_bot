@@ -275,11 +275,18 @@
             highlightSlot(null);
             srcCard = null;
         });
+        card.addEventListener('click', () => showZoom(card));
     }
 
     document.querySelectorAll('.inv-card').forEach(attachDesktopDrag);
 
     allSlots().forEach(wrap => {
+        wrap.addEventListener('click', () => {
+            if (srcCard) return;
+            if (wrap.dataset.occupied !== 'true') return;
+            const img = wrap.querySelector('.slot-img');
+            if (img) showZoomSrc(img.src);
+        });
         wrap.addEventListener('dragover', e => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
