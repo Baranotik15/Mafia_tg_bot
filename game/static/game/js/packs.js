@@ -124,8 +124,8 @@ openBtn.addEventListener('click', async () => {
     packBottle.classList.remove('pack-shaking');
 
     // 2. Flash + pack vanishes
-    SND_1.currentTime = 0;
-    SND_1.play().catch(() => {});
+    SND_2.currentTime = 0;
+    SND_2.play().catch(() => {});
     packFlash.classList.add('pack-flashing');
     packWrap.classList.add('pack-vanish');
     await delay(480);
