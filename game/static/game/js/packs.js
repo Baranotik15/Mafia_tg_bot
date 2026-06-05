@@ -9,16 +9,35 @@ function initPromo() {
     const promoCancel  = document.getElementById('promo-cancel');
     const packAddBtn   = document.querySelector('.pack-icon-btn[data-role="add"]');
 
+    function adjustPromoViewport() {
+        if (!promoOverlay.classList.contains('active')) return;
+        const vv = window.visualViewport;
+        if (!vv) return;
+        promoOverlay.style.top    = vv.offsetTop  + 'px';
+        promoOverlay.style.left   = vv.offsetLeft + 'px';
+        promoOverlay.style.width  = vv.width  + 'px';
+        promoOverlay.style.height = vv.height + 'px';
+    }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', adjustPromoViewport);
+        window.visualViewport.addEventListener('scroll', adjustPromoViewport);
+    }
+
     function openPromo() {
         promoInput.value = '';
         promoMsg.textContent = '';
         promoMsg.className = 'promo-msg';
+        promoOverlay.style.top = promoOverlay.style.left =
+            promoOverlay.style.width = promoOverlay.style.height = '';
         promoOverlay.classList.add('active');
         setTimeout(() => promoInput.focus(), 150);
     }
 
     function closePromo() {
         promoOverlay.classList.remove('active');
+        promoOverlay.style.top = promoOverlay.style.left =
+            promoOverlay.style.width = promoOverlay.style.height = '';
     }
 
     packAddBtn.addEventListener('click', openPromo);
