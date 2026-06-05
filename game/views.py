@@ -18,7 +18,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Card, EventResult, Player, PromoCode
+from .models import Card, EventResult, EventSnapshot, Player, PromoCode
 
 BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
 MAX_BACKUPS = 10
@@ -145,15 +145,74 @@ def index(request):
 
 def admin_events(request):
     cards = list(Card.objects.values('slug', 'name', 'score', 'fixed_count'))
-    completed = {
-        r.event_number: r.winners
-        for r in EventResult.objects.all()
-    }
+    completed = {r.event_number: r.winners for r in EventResult.objects.all()}
+    started   = {r.event_number: True       for r in EventSnapshot.objects.all()}
     return render(request, 'game/admin_events.html', {
-        'event_range': range(1, 17),
-        'cards_json': json.dumps(cards, ensure_ascii=False),
+        'event_range':    range(1, 17),
+        'cards_json':     json.dumps(cards,     ensure_ascii=False),
         'completed_json': json.dumps(completed, ensure_ascii=False),
+        'started_json':   json.dumps(started,   ensure_ascii=False),
     })
+
+
+@csrf_exempt
+@require_POST
+def start_event(request):
+    admin = get_current_player(request)
+    data = json.loads(request.body)
+    event_num = data.get('event')
+
+    if EventSnapshot.objects.filter(event_number=event_num).exists():
+        return JsonResponse({'error': 'already_started'}, status=400)
+    if EventResult.objects.filter(event_number=event_num).exists():
+        return JsonResponse({'error': 'already_completed'}, status=400)
+
+    players = Player.objects.select_related('slot1', 'slot2', 'slot3').all()
+    slots = {}
+    for player in players:
+        s = [
+            player.slot1.slug if player.slot1 else None,
+            player.slot2.slug if player.slot2 else None,
+            player.slot3.slug if player.slot3 else None,
+        ]
+        if any(s):
+            slots[str(player.telegram_id)] = s
+
+    EventSnapshot.objects.create(event_number=event_num, slots=slots)
+
+    admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
+    SEP = '─' * 48
+    logger.info(
+        f'{SEP}\n'
+        f'СТАРТ ПОДІЇ №{event_num}\n'
+        f'  Адмін: {admin_label}\n'
+        f'  Гравців зафіксовано: {len(slots)}\n'
+        f'{SEP}'
+    )
+    return JsonResponse({'ok': True, 'players_count': len(slots)})
+
+
+@csrf_exempt
+@require_POST
+def cancel_start(request):
+    admin = get_current_player(request)
+    data = json.loads(request.body)
+    event_num = data.get('event')
+    try:
+        snapshot = EventSnapshot.objects.get(event_number=event_num)
+    except EventSnapshot.DoesNotExist:
+        return JsonResponse({'error': 'not_started'}, status=404)
+    snapshot.delete()
+
+    admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
+    SEP = '─' * 48
+    logger.info(
+        f'{SEP}\n'
+        f'СКАСУВАННЯ СТАРТУ ПОДІЇ №{event_num}\n'
+        f'  Адмін: {admin_label}\n'
+        f'{SEP}'
+    )
+    return JsonResponse({'ok': True})
 
 
 @csrf_exempt
@@ -168,6 +227,8 @@ def finish_event(request):
     if EventResult.objects.filter(event_number=event_num).exists():
         return JsonResponse({'error': 'already_completed'}, status=400)
 
+    snapshot = EventSnapshot.objects.filter(event_number=event_num).first()
+
     awarded = {}
     for item in winners:
         slug = item.get('slug')
@@ -177,13 +238,21 @@ def finish_event(request):
         except Card.DoesNotExist:
             continue
         points = card.score * count
-        players = Player.objects.filter(Q(slot1=card) | Q(slot2=card) | Q(slot3=card))
+
+        if snapshot:
+            player_ids = [int(tid) for tid, slots in snapshot.slots.items() if slug in slots]
+            players = Player.objects.filter(telegram_id__in=player_ids)
+        else:
+            players = Player.objects.filter(Q(slot1=card) | Q(slot2=card) | Q(slot3=card))
+
         for player in players:
             player.score += points
             player.save(update_fields=['score'])
             awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
+    if snapshot:
+        snapshot.delete()
 
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     cards_lines = '\n'.join(
@@ -230,6 +299,7 @@ def cancel_event(request):
     for tid_str, points in awards.items():
         Player.objects.filter(telegram_id=int(tid_str)).update(score=F('score') - points)
     result.delete()
+    EventSnapshot.objects.filter(event_number=event_num).delete()
 
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     if awards:

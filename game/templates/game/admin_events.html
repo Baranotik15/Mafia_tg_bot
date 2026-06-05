@@ -26,16 +26,21 @@
     </div>
     <div class="event-detail-body" id="eventDetailBody"></div>
     <div class="event-detail-footer">
+        <button class="start-event-btn"  id="startEventBtn">Старт події</button>
         <button class="finish-event-btn" id="finishEventBtn">Закінчити подію</button>
+        <button class="cancel-start-btn" id="cancelStartBtn">Скасувати старт</button>
         <button class="cancel-event-btn" id="cancelEventBtn">Скасувати розрахунок</button>
     </div>
 </div>
 
 <script>
-    const CARDS       = {{ cards_json|safe }};
-    const COMPLETED   = {{ completed_json|safe }};
-    const FINISH_URL  = "{% url 'finish_event' %}";
-    const CANCEL_URL  = "{% url 'cancel_event' %}";
+    const CARDS            = {{ cards_json|safe }};
+    const COMPLETED        = {{ completed_json|safe }};
+    const STARTED          = {{ started_json|safe }};
+    const START_URL        = "{% url 'start_event' %}";
+    const CANCEL_START_URL = "{% url 'cancel_start' %}";
+    const FINISH_URL       = "{% url 'finish_event' %}";
+    const CANCEL_URL       = "{% url 'cancel_event' %}";
 </script>
 {% endblock %}
 

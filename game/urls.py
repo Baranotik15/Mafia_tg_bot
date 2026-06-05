@@ -10,7 +10,9 @@ urlpatterns = [
     path('admin-events/', views.admin_events, name='admin_events'),
     path('slot/set/', views.set_slot, name='set_slot'),
     path('slot/clear/', views.clear_slot, name='clear_slot'),
-    path('event/finish/', views.finish_event, name='finish_event'),
-    path('event/cancel/', views.cancel_event, name='cancel_event'),
+    path('event/start/',        views.start_event,  name='start_event'),
+    path('event/cancel-start/', views.cancel_start, name='cancel_start'),
+    path('event/finish/',       views.finish_event, name='finish_event'),
+    path('event/cancel/',       views.cancel_event, name='cancel_event'),
     path('packs/promo/', views.redeem_promo, name='redeem_promo'),
 ]

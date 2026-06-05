@@ -91,7 +91,7 @@ class _ColorFormatter(logging.Formatter):
         msg = super().format(record)
         if 'ПРОМОКОД' in msg:
             return f'{self._YELLOW}{msg}{self._RESET}'
-        if 'ЗАВЕРШЕННЯ' in msg or 'СКАСУВАННЯ' in msg:
+        if 'ЗАВЕРШЕННЯ' in msg or 'СКАСУВАННЯ' in msg or 'СТАРТ ПОДІЇ' in msg:
             return f'{self._GREEN}{msg}{self._RESET}'
         return msg
 

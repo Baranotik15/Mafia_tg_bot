@@ -12,6 +12,16 @@ class Card(models.Model):
         return f'[{self.slug}] {self.name or "—"} | очки: {self.score} | лічильник: {fixed}'
 
 
+class EventSnapshot(models.Model):
+    event_number = models.IntegerField(unique=True)
+    # {str(telegram_id): [slot1_slug_or_null, slot2_slug_or_null, slot3_slug_or_null]}
+    slots        = models.JSONField(default=dict)
+    taken_at     = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Снепшот події {self.event_number} | {self.taken_at:%Y-%m-%d %H:%M}'
+
+
 class EventResult(models.Model):
     event_number = models.IntegerField(unique=True)
     winners      = models.JSONField(default=list)   # [{slug, count}, ...]

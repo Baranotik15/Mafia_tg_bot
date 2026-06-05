@@ -1,13 +1,16 @@
 (function () {
-    const detail    = document.getElementById('eventDetail');
-    const title     = document.getElementById('eventDetailTitle');
-    const body      = document.getElementById('eventDetailBody');
-    const backBtn   = document.getElementById('eventDetailBack');
-    const finBtn    = document.getElementById('finishEventBtn');
-    const cancelBtn = document.getElementById('cancelEventBtn');
+    const detail         = document.getElementById('eventDetail');
+    const title          = document.getElementById('eventDetailTitle');
+    const body           = document.getElementById('eventDetailBody');
+    const backBtn        = document.getElementById('eventDetailBack');
+    const startBtn       = document.getElementById('startEventBtn');
+    const finBtn         = document.getElementById('finishEventBtn');
+    const cancelStartBtn = document.getElementById('cancelStartBtn');
+    const cancelBtn      = document.getElementById('cancelEventBtn');
 
     let currentEvent = null;
     const completed  = Object.assign({}, COMPLETED);
+    const started    = Object.assign({}, STARTED);
     let toastTimer   = null;
 
     function showToast(msg) {
@@ -24,9 +27,8 @@
         toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 3000);
     }
 
-    function isCompleted(num) {
-        return Object.prototype.hasOwnProperty.call(completed, num);
-    }
+    function isCompleted(num) { return Object.prototype.hasOwnProperty.call(completed, String(num)); }
+    function isStarted(num)   { return Object.prototype.hasOwnProperty.call(started,   String(num)); }
 
     function getGridCard(num) {
         return document.querySelector('.event-card[data-event="' + num + '"]');
@@ -34,7 +36,7 @@
 
     function markCompleted(num) {
         const el = getGridCard(num);
-        if (el) el.classList.add('completed');
+        if (el) { el.classList.add('completed'); el.classList.remove('started'); }
     }
 
     function markUncompleted(num) {
@@ -42,9 +44,18 @@
         if (el) el.classList.remove('completed');
     }
 
-    Object.keys(completed).forEach(function (num) {
-        markCompleted(parseInt(num));
-    });
+    function markStarted(num) {
+        const el = getGridCard(num);
+        if (el) el.classList.add('started');
+    }
+
+    function markUnstarted(num) {
+        const el = getGridCard(num);
+        if (el) el.classList.remove('started');
+    }
+
+    Object.keys(completed).forEach(function (num) { markCompleted(parseInt(num)); });
+    Object.keys(started).forEach(function (num)   { markStarted(parseInt(num)); });
 
     function buildRows(winners, readonly) {
         body.innerHTML = '';
@@ -103,7 +114,6 @@
             counter.appendChild(minus);
             counter.appendChild(valEl);
             counter.appendChild(plus);
-
             row.appendChild(cb);
             row.appendChild(nameEl);
             row.appendChild(scoreEl);
@@ -112,23 +122,35 @@
         });
     }
 
+    function setButtons(state) {
+        startBtn.style.display       = state === 'idle'      ? 'block' : 'none';
+        finBtn.style.display         = state === 'started'   ? 'block' : 'none';
+        cancelStartBtn.style.display = state === 'started'   ? 'block' : 'none';
+        cancelBtn.style.display      = state === 'completed' ? 'block' : 'none';
+    }
+
     function openEvent(num) {
         currentEvent = num;
         title.textContent = 'Подія ' + num;
 
         if (isCompleted(num)) {
-            buildRows(completed[num], true);
-            finBtn.style.display = 'none';
-            cancelBtn.style.display = 'block';
+            buildRows(completed[String(num)], true);
+            setButtons('completed');
             cancelBtn.textContent = 'Скасувати розрахунок';
             cancelBtn.disabled = false;
-        } else {
+        } else if (isStarted(num)) {
             buildRows(null, false);
-            finBtn.style.display = 'block';
+            setButtons('started');
             finBtn.textContent = 'Закінчити подію';
             finBtn.disabled = false;
             finBtn.classList.remove('success');
-            cancelBtn.style.display = 'none';
+            cancelStartBtn.textContent = 'Скасувати старт';
+            cancelStartBtn.disabled = false;
+        } else {
+            body.innerHTML = '';
+            setButtons('idle');
+            startBtn.textContent = 'Старт події';
+            startBtn.disabled = false;
         }
 
         detail.classList.add('active');
@@ -147,6 +169,57 @@
 
     backBtn.addEventListener('click', closeEvent);
 
+    // ── Start ──
+    startBtn.addEventListener('click', function () {
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Фіксую слоти...';
+
+        fetch(START_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: currentEvent }),
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.ok) {
+                    started[String(currentEvent)] = true;
+                    markStarted(currentEvent);
+                    openEvent(currentEvent);
+                } else {
+                    startBtn.disabled = false;
+                    startBtn.textContent = 'Старт події';
+                }
+            })
+            .catch(function () {
+                startBtn.disabled = false;
+                startBtn.textContent = 'Старт події';
+            });
+    });
+
+    // ── Cancel start ──
+    cancelStartBtn.addEventListener('click', function () {
+        cancelStartBtn.disabled = true;
+
+        fetch(CANCEL_START_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: currentEvent }),
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.ok) {
+                    delete started[String(currentEvent)];
+                    markUnstarted(currentEvent);
+                    cancelStartBtn.textContent = 'Скасовано!';
+                    setTimeout(closeEvent, 1000);
+                } else {
+                    cancelStartBtn.disabled = false;
+                }
+            })
+            .catch(function () { cancelStartBtn.disabled = false; });
+    });
+
+    // ── Finish ──
     finBtn.addEventListener('click', function () {
         const winners = [];
         body.querySelectorAll('.card-row').forEach(function (row) {
@@ -173,7 +246,8 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.ok) {
-                    completed[currentEvent] = winners;
+                    completed[String(currentEvent)] = winners;
+                    delete started[String(currentEvent)];
                     markCompleted(currentEvent);
                     finBtn.textContent = 'Нараховано!';
                     finBtn.classList.add('success');
@@ -185,6 +259,7 @@
             .catch(function () { finBtn.disabled = false; });
     });
 
+    // ── Cancel completed ──
     cancelBtn.addEventListener('click', function () {
         cancelBtn.disabled = true;
 
@@ -196,7 +271,7 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data.ok) {
-                    delete completed[currentEvent];
+                    delete completed[String(currentEvent)];
                     markUncompleted(currentEvent);
                     cancelBtn.textContent = 'Скасовано!';
                     setTimeout(closeEvent, 1000);
