@@ -72,15 +72,19 @@ function initPromo() {
 initPromo();
 
 function showEnlargedCard(src) {
+    playCardSound(slugFromSrc(src));
     const overlay = document.createElement('div');
     overlay.className = 'card-zoom-overlay';
     overlay.innerHTML = `<button class="card-zoom-close">✕</button><img class="card-zoom-img" src="${src}" alt="">`;
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('active'));
-    overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
+    function closeZoom() {
+        stopCardSound();
         overlay.classList.remove('active');
         setTimeout(() => overlay.remove(), 250);
-    });
+    }
+    overlay.querySelector('.card-zoom-close').addEventListener('click', closeZoom);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeZoom(); });
 }
 
 const infoBtn      = document.getElementById('pack-info-btn');

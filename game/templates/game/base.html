@@ -36,6 +36,31 @@
         <img class="bg-frame-overlay" src="{% static 'game/img/bg-frame.webp' %}" alt="">
     </div>
 
+    <script>
+        const CARD_SOUNDS = {
+            'dry_win': new Audio("{% static 'game/music/cart_sound/dry_win.mp3' %}"),
+        };
+        let _activeCardSound = null;
+        function playCardSound(slug) {
+            stopCardSound();
+            const snd = CARD_SOUNDS[slug];
+            if (!snd) return;
+            _activeCardSound = snd;
+            snd.currentTime = 0;
+            snd.play().catch(() => {});
+        }
+        function stopCardSound() {
+            if (_activeCardSound) {
+                _activeCardSound.pause();
+                _activeCardSound.currentTime = 0;
+                _activeCardSound = null;
+            }
+        }
+        function slugFromSrc(src) {
+            const m = src.match(/carts\/([^/.]+)/);
+            return m ? m[1] : null;
+        }
+    </script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="{% static 'game/js/base.js' %}"></script>
     {% block page_js %}{% endblock %}

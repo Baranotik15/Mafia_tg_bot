@@ -134,15 +134,19 @@
 
     // ── Zoom overlay ──
     function showZoomSrc(src) {
+        playCardSound(slugFromSrc(src));
         const overlay = document.createElement('div');
         overlay.className = 'card-zoom-overlay';
         overlay.innerHTML = `<button class="card-zoom-close">✕</button><img class="card-zoom-img" src="${src}" alt="">`;
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('active'));
-        overlay.querySelector('.card-zoom-close').addEventListener('click', () => {
+        function closeZoom() {
+            stopCardSound();
             overlay.classList.remove('active');
             setTimeout(() => overlay.remove(), 250);
-        });
+        }
+        overlay.querySelector('.card-zoom-close').addEventListener('click', closeZoom);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeZoom(); });
     }
 
     function showZoom(card) {
@@ -274,7 +278,7 @@
         const hammerOverlay = document.getElementById('hammerInfoOverlay');
         if (hammerOverlay?.classList.contains('active')) { hammerOverlay.classList.remove('active'); return; }
         const zoom = document.querySelector('.card-zoom-overlay');
-        if (zoom) { zoom.classList.remove('active'); setTimeout(() => zoom.remove(), 250); }
+        if (zoom) { stopCardSound(); zoom.classList.remove('active'); setTimeout(() => zoom.remove(), 250); }
     });
 
     const hammerInfoBtn     = document.getElementById('hammerInfoBtn');
