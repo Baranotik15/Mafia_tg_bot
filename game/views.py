@@ -6,6 +6,7 @@ import logging
 import os
 import random
 import shutil
+import subprocess
 from datetime import datetime
 from urllib.parse import parse_qsl, unquote
 
@@ -39,11 +40,16 @@ def _make_backup():
             dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sql')
             pg_env = os.environ.copy()
             pg_env['PGPASSWORD'] = db.get('PASSWORD', '')
-            ret = os.system(
-                f"pg_dump -h {db['HOST']} -p {db['PORT']} -U {db['USER']} {db['NAME']} > \"{dst}\""
+            result = subprocess.run(
+                ['pg_dump', '-h', db['HOST'], '-p', str(db['PORT']),
+                 '-U', db['USER'], db['NAME']],
+                env=pg_env,
+                stdout=open(dst, 'w'),
+                stderr=subprocess.PIPE,
             )
-            if ret != 0:
-                logger.warning('pg_dump завершився з помилкою — бекап може бути неповним')
+            if result.returncode != 0:
+                err = result.stderr.decode(errors='replace').strip()
+                logger.warning(f'pg_dump помилка: {err}')
             pattern = os.path.join(BACKUP_DIR, 'backup_*.sql')
         else:
             return
