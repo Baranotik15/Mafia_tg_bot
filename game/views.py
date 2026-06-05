@@ -283,7 +283,7 @@ def finish_event(request):
             for tid_str, player_slots in snapshot.slots.items():
                 if slug not in player_slots:
                     continue
-                multiplier = 2 if player_slots.index(slug) == 2 else 1
+                multiplier = 2 if player_slots.index(slug) == 1 else 1
                 player = Player.objects.filter(telegram_id=int(tid_str)).first()
                 if player:
                     _add_award(tid_str, player, base_points, multiplier)
@@ -291,7 +291,7 @@ def finish_event(request):
             for player in Player.objects.select_related('slot1', 'slot2', 'slot3').filter(
                 Q(slot1=card) | Q(slot2=card) | Q(slot3=card)
             ):
-                multiplier = 2 if player.slot3 == card else 1
+                multiplier = 2 if player.slot2 == card else 1
                 _add_award(str(player.telegram_id), player, base_points, multiplier)
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)

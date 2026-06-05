@@ -115,6 +115,10 @@
     gap: 4px;
 }
 
+.slot-wrap--gold {
+    flex: 1.5;
+}
+
 .slot-num {
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 13px;

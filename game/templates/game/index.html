@@ -22,19 +22,19 @@
 
     <div class="block-top">
         {% for slot_data in slots %}
-        <div class="slot-wrap {% if slot_data.card %}slot-occupied{% endif %}"
+        <div class="slot-wrap {% if slot_data.position == 2 %}slot-wrap--gold{% endif %} {% if slot_data.card %}slot-occupied{% endif %}"
              data-position="{{ slot_data.position }}"
              data-occupied="{% if slot_data.card %}true{% else %}false{% endif %}">
-            {% if slot_data.position == 3 %}
+            {% if slot_data.position == 2 %}
             <span class="slot-num slot-num--x2">x2</span>
             {% else %}
             <span class="slot-num slot-num--spacer">x2</span>
             {% endif %}
-            <div class="card-slot {% if slot_data.position == 3 %}card-slot--gold{% else %}card-slot--silver{% endif %}">
+            <div class="card-slot {% if slot_data.position == 2 %}card-slot--gold{% else %}card-slot--silver{% endif %}">
                 {% if slot_data.card %}
                 <img class="slot-img" src="{% static 'game/img/carts/' %}{{ slot_data.card.slug }}.webp" alt="">
                 {% endif %}
-                {% if slot_data.position == 3 %}
+                {% if slot_data.position == 2 %}
                 <img class="slot-frame" src="{% static 'game/img/frames/frame-gold.webp' %}" alt="">
                 {% else %}
                 <img class="slot-frame" src="{% static 'game/img/frames/frame-silver.webp' %}" alt="">
