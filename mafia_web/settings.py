@@ -82,6 +82,20 @@ SESSION_COOKIE_SECURE = True
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
+class _ColorFormatter(logging.Formatter):
+    _YELLOW = '\033[33m'
+    _GREEN  = '\033[32m'
+    _RESET  = '\033[0m'
+
+    def format(self, record):
+        msg = super().format(record)
+        if 'ПРОМОКОД' in msg:
+            return f'{self._YELLOW}{msg}{self._RESET}'
+        if 'ЗАВЕРШЕННЯ' in msg or 'СКАСУВАННЯ' in msg:
+            return f'{self._GREEN}{msg}{self._RESET}'
+        return msg
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -90,6 +104,12 @@ LOGGING = {
             'format': '[{asctime}] {message}',
             'style': '{',
             'datefmt': '%d.%m.%Y %H:%M:%S',
+        },
+        'color_console': {
+            '()': lambda: _ColorFormatter(
+                fmt='[%(asctime)s] %(message)s',
+                datefmt='%d.%m.%Y %H:%M:%S',
+            ),
         },
     },
     'handlers': {
@@ -101,7 +121,7 @@ LOGGING = {
         },
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'readable',
+            'formatter': 'color_console',
         },
     },
     'loggers': {
