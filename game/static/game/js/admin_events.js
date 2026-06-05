@@ -46,14 +46,18 @@
             plus.textContent = '+';
             plus.disabled = card.fixed_count;
 
+            function updateScore(count) {
+                scoreEl.textContent = '+' + (card.score * count) + ' балів';
+            }
+
             if (!card.fixed_count) {
                 minus.addEventListener('click', function () {
                     const v = parseInt(valEl.textContent);
-                    if (v > 1) valEl.textContent = v - 1;
+                    if (v > 1) { valEl.textContent = v - 1; updateScore(v - 1); }
                 });
                 plus.addEventListener('click', function () {
                     const v = parseInt(valEl.textContent);
-                    valEl.textContent = v + 1;
+                    valEl.textContent = v + 1; updateScore(v + 1);
                 });
             }
 
