@@ -31,7 +31,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
         app.style.opacity = '1';
     }
     apply();
-    window.addEventListener('resize', apply);
+    window.addEventListener('resize', () => {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        apply();
+    });
 })();
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
