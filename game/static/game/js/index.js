@@ -117,6 +117,8 @@
         const position = parseInt(slotWrap.dataset.position);
         const data = await apiSetSlot(position, slug);
         if (data.ok) {
+            SND_ANCHOR.currentTime = 0;
+            SND_ANCHOR.play().catch(() => {});
             justDropped = true;
             setTimeout(() => { justDropped = false; }, 400);
             if (data.old_slug) addCardToGrid(data.old_slug);
