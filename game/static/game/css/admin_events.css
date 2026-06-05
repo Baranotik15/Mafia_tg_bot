@@ -294,7 +294,7 @@
 /* Toast */
 .ev-toast {
     position: absolute;
-    bottom: 110px;
+    top: 50%;
     left: 16px;
     right: 16px;
     background: rgba(180,60,60,0.92);
@@ -305,7 +305,7 @@
     padding: 12px 16px;
     border-radius: 10px;
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(calc(-50% + 8px));
     transition: opacity 0.2s, transform 0.2s;
     pointer-events: none;
     z-index: 10;
@@ -313,5 +313,5 @@
 
 .ev-toast.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(-50%);
 }

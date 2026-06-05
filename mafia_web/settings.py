@@ -1,4 +1,5 @@
 from pathlib import Path
+import logging.handlers
 import os
 from dotenv import load_dotenv
 
@@ -93,7 +94,7 @@ LOGGING = {
     },
     'handlers': {
         'events_file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.WatchedFileHandler',
             'filename': str(LOGS_DIR / 'events.log'),
             'formatter': 'readable',
             'encoding': 'utf-8',
