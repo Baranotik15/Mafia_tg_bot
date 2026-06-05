@@ -265,7 +265,6 @@
     aspect-ratio: 3 / 4;
     cursor: pointer;
     transition: transform 0.18s;
-    background: #080601;
     overflow: hidden;
     display: flex;
     flex-direction: column;
