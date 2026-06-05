@@ -24,30 +24,37 @@ MAX_BACKUPS = 10
 
 
 def _make_backup():
-    os.makedirs(BACKUP_DIR, exist_ok=True)
-    db = settings.DATABASES['default']
-    now = datetime.now()
-    stamp = f'{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}'
+    try:
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+        db = settings.DATABASES['default']
+        now = datetime.now()
+        stamp = f'{now.month:02d}_{now.day:02d}_{now.hour:02d}_{now.minute:02d}'
 
-    if 'sqlite' in db['ENGINE']:
-        src = str(db['NAME'])
-        dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sqlite3')
-        shutil.copy2(src, dst)
-        pattern = os.path.join(BACKUP_DIR, 'backup_*.sqlite3')
-    elif 'postgresql' in db['ENGINE']:
-        dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sql')
-        env = os.environ.copy()
-        env['PGPASSWORD'] = db.get('PASSWORD', '')
-        os.system(
-            f"pg_dump -h {db['HOST']} -p {db['PORT']} -U {db['USER']} {db['NAME']} > \"{dst}\""
-        )
-        pattern = os.path.join(BACKUP_DIR, 'backup_*.sql')
-    else:
-        return
+        if 'sqlite' in db['ENGINE']:
+            src = str(db['NAME'])
+            dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sqlite3')
+            shutil.copy2(src, dst)
+            pattern = os.path.join(BACKUP_DIR, 'backup_*.sqlite3')
+        elif 'postgresql' in db['ENGINE']:
+            dst = os.path.join(BACKUP_DIR, f'backup_{stamp}.sql')
+            pg_env = os.environ.copy()
+            pg_env['PGPASSWORD'] = db.get('PASSWORD', '')
+            ret = os.system(
+                f"pg_dump -h {db['HOST']} -p {db['PORT']} -U {db['USER']} {db['NAME']} > \"{dst}\""
+            )
+            if ret != 0:
+                logger.warning('pg_dump завершився з помилкою — бекап може бути неповним')
+            pattern = os.path.join(BACKUP_DIR, 'backup_*.sql')
+        else:
+            return
 
-    backups = sorted(glob.glob(pattern))
-    while len(backups) > MAX_BACKUPS:
-        os.remove(backups.pop(0))
+        backups = sorted(glob.glob(pattern))
+        while len(backups) > MAX_BACKUPS:
+            os.remove(backups.pop(0))
+
+        logger.info(f'Бекап збережено: {os.path.basename(dst)}')
+    except Exception as e:
+        logger.error(f'Помилка створення бекапу: {e}')
 
 
 def _validate_init_data(init_data: str) -> dict | None:
