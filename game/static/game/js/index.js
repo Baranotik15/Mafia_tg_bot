@@ -296,7 +296,7 @@
             highlightSlot(null);
             srcCard = null;
         });
-        card.addEventListener('click', () => showZoom(card));
+        card.addEventListener('click', () => { if (!justDropped) showZoom(card); });
     }
 
     document.querySelectorAll('.inv-card').forEach(attachDesktopDrag);
