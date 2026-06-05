@@ -266,6 +266,7 @@
     cursor: pointer;
     transition: transform 0.18s;
     overflow: hidden;
+    border-radius: 7px;
     display: flex;
     flex-direction: column;
     align-items: center;
