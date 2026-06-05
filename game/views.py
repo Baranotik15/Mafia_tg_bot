@@ -259,7 +259,17 @@ def finish_event(request):
 
     snapshot = EventSnapshot.objects.filter(event_number=event_num).first()
 
-    awarded = {}
+    awarded    = {}
+    breakdown  = {}  # {tid_str: ["6", "6×2 (12)", ...]}
+
+    def _add_award(tid_str, player_obj, base_pts, multiplier):
+        actual = base_pts * multiplier
+        player_obj.score += actual
+        player_obj.save(update_fields=['score'])
+        awarded[tid_str] = awarded.get(tid_str, 0) + actual
+        part = f'{base_pts}×2 ({actual})' if multiplier == 2 else str(base_pts)
+        breakdown.setdefault(tid_str, []).append(part)
+
     for item in winners:
         slug = item.get('slug')
         count = max(1, int(item.get('count', 1)))
@@ -267,18 +277,22 @@ def finish_event(request):
             card = Card.objects.get(slug=slug)
         except Card.DoesNotExist:
             continue
-        points = card.score * count
+        base_points = card.score * count
 
         if snapshot:
-            player_ids = [int(tid) for tid, slots in snapshot.slots.items() if slug in slots]
-            players = Player.objects.filter(telegram_id__in=player_ids)
+            for tid_str, player_slots in snapshot.slots.items():
+                if slug not in player_slots:
+                    continue
+                multiplier = 2 if player_slots.index(slug) == 2 else 1
+                player = Player.objects.filter(telegram_id=int(tid_str)).first()
+                if player:
+                    _add_award(tid_str, player, base_points, multiplier)
         else:
-            players = Player.objects.filter(Q(slot1=card) | Q(slot2=card) | Q(slot3=card))
-
-        for player in players:
-            player.score += points
-            player.save(update_fields=['score'])
-            awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
+            for player in Player.objects.select_related('slot1', 'slot2', 'slot3').filter(
+                Q(slot1=card) | Q(slot2=card) | Q(slot3=card)
+            ):
+                multiplier = 2 if player.slot3 == card else 1
+                _add_award(str(player.telegram_id), player, base_points, multiplier)
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
 
@@ -291,7 +305,8 @@ def finish_event(request):
         players_map = {str(p.telegram_id): p.username for p in Player.objects.filter(
             telegram_id__in=[int(k) for k in awarded])}
         scores_lines = '\n'.join(
-            f'    • {players_map.get(tid, "?")} (ID: {tid}) → +{pts} балів'
+            f'    • {players_map.get(tid, "?")} (ID: {tid}) → '
+            f'{" + ".join(breakdown.get(tid, [str(pts)]))} = +{pts} балів'
             for tid, pts in awarded.items()
         )
     else:

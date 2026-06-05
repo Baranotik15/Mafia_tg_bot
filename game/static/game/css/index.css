@@ -123,6 +123,12 @@
     white-space: nowrap;
 }
 
+.slot-num--x2 {
+    font-size: 16px;
+    color: #f5c518;
+    text-shadow: 0 0 10px rgba(245,197,24,0.7), 0 1px 4px rgba(0,0,0,0.8);
+}
+
 .slot-btn-wrap {
     display: flex;
     justify-content: center;

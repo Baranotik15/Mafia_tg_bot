@@ -60,7 +60,13 @@
 
     function renderSlot(slotWrap, imgSrc) {
         const cardSlot = slotWrap.querySelector('.card-slot');
-        cardSlot.innerHTML = `<img class="slot-img" src="${imgSrc}" alt="">`;
+        cardSlot.querySelectorAll('.slot-img').forEach(el => el.remove());
+        const img = document.createElement('img');
+        img.className = 'slot-img';
+        img.src = imgSrc;
+        img.alt = '';
+        const frame = cardSlot.querySelector('.slot-frame');
+        cardSlot.insertBefore(img, frame);
         slotWrap.dataset.occupied = 'true';
         slotWrap.classList.add('slot-occupied');
     }
