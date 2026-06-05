@@ -4,11 +4,12 @@
     const HOLD_MS    = 180;
 
     // ── State ──
-    let mode       = 'idle'; // idle | holding | dragging
-    let holdTimer  = null;
-    let srcCard    = null;
-    let ghost      = null;
-    let activeSlot = null;
+    let mode        = 'idle'; // idle | holding | dragging
+    let holdTimer   = null;
+    let srcCard     = null;
+    let ghost       = null;
+    let activeSlot  = null;
+    let justDropped = false;
     let startX = 0, startY = 0, startT = 0;
 
     // ── DOM ──
@@ -116,6 +117,8 @@
         const position = parseInt(slotWrap.dataset.position);
         const data = await apiSetSlot(position, slug);
         if (data.ok) {
+            justDropped = true;
+            setTimeout(() => { justDropped = false; }, 400);
             if (data.old_slug) addCardToGrid(data.old_slug);
             removeCardFromGrid(slug);
             renderSlot(slotWrap, imgSrc);
@@ -300,7 +303,7 @@
 
     allSlots().forEach(wrap => {
         wrap.addEventListener('click', () => {
-            if (srcCard) return;
+            if (srcCard || justDropped) return;
             if (wrap.dataset.occupied !== 'true') return;
             const img = wrap.querySelector('.slot-img');
             if (img) showZoomSrc(img.src);
