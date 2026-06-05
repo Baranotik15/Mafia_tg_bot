@@ -16,6 +16,7 @@ CARDS = [
     {'slug': 'triplet',           'name': 'Триплет',       'score': 12,  'fixed_count': False},
     {'slug': 'third_wheel',       'name': 'Третій зайвий', 'score': 2,   'fixed_count': True},
     {'slug': 'Three_in_a_row',    'name': 'Три в ряд',     'score': 1,   'fixed_count': True},
+    {'slug': 'friendly_fire',     'name': 'Френдліфаер',   'score': 10,   'fixed_count': False},
 ]
 
 
