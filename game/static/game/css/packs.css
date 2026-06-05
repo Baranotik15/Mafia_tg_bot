@@ -109,11 +109,11 @@
 }
 
 .packs-icons-row .pack-icon-btn:first-child {
-    transform: translate(-85px, 24px);
+    transform: translate(-85px, 12px);
 }
 
 .packs-icons-row .pack-icon-btn:last-child {
-    transform: translate(85px, 24px);
+    transform: translate(85px, 12px);
 }
 
 .pack-open-btn {
