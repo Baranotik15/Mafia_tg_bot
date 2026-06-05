@@ -38,7 +38,10 @@
 
     <script>
         const CARD_SOUNDS = {
-            'dry_win': new Audio("{% static 'game/music/cart_sound/dry_win.mp3' %}"),
+            'dry_win':        new Audio("{% static 'game/music/cart_sound/dry_win.mp3' %}"),
+            'three_on_three': new Audio("{% static 'game/music/cart_sound/three_on_three.mp3' %}"),
+            'executioner':    new Audio("{% static 'game/music/cart_sound/executioner.mp3' %}"),
+            'sheriff_kill':   new Audio("{% static 'game/music/cart_sound/sheriff_kill.mp3' %}"),
         };
         let _activeCardSound = null;
         function playCardSound(slug) {
