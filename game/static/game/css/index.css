@@ -24,8 +24,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 8px 14px;
+    gap: 6px;
+    padding: 8px 8px;
     isolation: isolate;
 }
 
@@ -117,6 +117,10 @@
 
 .slot-wrap--gold {
     flex: 1;
+}
+
+.slot-wrap:not(.slot-wrap--gold) {
+    margin-top: 8px;
 }
 
 .slot-num {
