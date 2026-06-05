@@ -195,12 +195,15 @@ def finish_event(request):
     else:
         scores_lines = '    (жоден гравець не мав цих карток у слотах)'
 
+    SEP = '─' * 48
     logger.info(
+        f'{SEP}\n'
         f'ЗАВЕРШЕННЯ ПОДІЇ №{event_num}\n'
         f'  Адмін: {admin_label}\n'
         f'  Переможні картки:\n{cards_lines}\n'
         f'  Нараховано балів:\n{scores_lines}\n'
-        f'  Всього отримали нарахування: {len(awarded)} гравців'
+        f'  Всього отримали нарахування: {len(awarded)} гравців\n'
+        f'{SEP}'
     )
     _make_backup()
     return JsonResponse({'ok': True, 'awarded': awarded})
@@ -235,10 +238,13 @@ def cancel_event(request):
     else:
         scores_lines = '    (балів знято не було)'
 
+    SEP = '─' * 48
     logger.info(
+        f'{SEP}\n'
         f'СКАСУВАННЯ ПОДІЇ №{event_num}\n'
         f'  Адмін: {admin_label}\n'
-        f'  Знято балів:\n{scores_lines}'
+        f'  Знято балів:\n{scores_lines}\n'
+        f'{SEP}'
     )
     _make_backup()
     return JsonResponse({'ok': True})
