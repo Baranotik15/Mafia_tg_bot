@@ -1,269 +1,241 @@
-# Mafia Telegram Mini App
+# Mafia Telegram Mini App — Production Setup Guide
 
-Telegram Mini App — карткова колекційна гра в стилі Мафії з адмін-панеллю для ведення ігрових подій.
+## Requirements
 
----
-
-## Архітектура
-
-Два незалежних процеси:
-
-| Процес | Опис |
-|---|---|
-| **`bot.py`** | aiogram 3 — відкриває Mini App, підтримує розсилку для адмінів |
-| **Django** (`mafia_web` + `game`) | Веб-додаток, REST API, робота з БД |
-
-### Моделі БД
-
-**`Card`** — карточка гри:
-- `slug` — унікальний ідентифікатор
-- `name` — назва картки
-- `score` — кількість балів за одне спрацювання
-- `fixed_count` — якщо `True`, лічильник заблокований на 1
-
-**`Player`** — гравець:
-- `telegram_id`, `username`, `score`, `packs`, `hammers`
-- `collected_cards` — M2M до `Card`
-- `slot1`, `slot2`, `slot3` — вибрані картки у слоти
-
-**`EventResult`** — збережений результат завершеної події:
-- `event_number` — номер події (1–16)
-- `winners` — список `[{slug, count}, ...]`
-- `awards` — нараховані бали `{telegram_id: points}`
+- Ubuntu 22.04+ (or any Linux), 1+ GB RAM
+- Docker 24+, Docker Compose v2+
+- Ports 80 / 443 open
+- A public domain with DNS A record → server IP (required for Telegram Mini App)
 
 ---
 
-## Локальна розробка
-
-### Вимоги
-- Python 3.11+
-- Токен бота від [@BotFather](https://t.me/BotFather)
-
-### Встановлення
-
-```powershell
-git clone <repo-url>
-cd Mafia_tg_bot
-
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-pip install -r requirements.txt
-
-copy .env.example .env
-# Відредагуй .env
-```
-
-### .env для локальної розробки
-
-```env
-BOT_TOKEN=your_telegram_bot_token
-WEBAPP_URL=http://localhost:8000
-SECRET_KEY=django-dev-secret-key
-DEBUG=True
-DB_ENGINE=sqlite
-DEV_PLAYER_ID=123456789
-ADMIN_IDS=123456789,987654321
-```
-
-### Запуск
-
-```powershell
-# Міграції (перший раз і після змін моделей)
-python manage.py migrate
-
-# Заповнити карточки в БД
-python manage.py seed_cards
-
-# Запустити веб-сервер
-python manage.py runserver
-
-# Запустити бота (в окремому терміналі)
-python bot.py
-```
-
----
-
-## Продакшен (EC2 + Docker)
-
-### Сервіси
-
-```
-db      — PostgreSQL 16
-web     — Django + Gunicorn (порт 8000)
-bot     — aiogram polling
-nginx   — проксі (порт 80/443)
-```
-
-При старті `web` автоматично виконує `migrate` і `collectstatic`.
-
-### Перший деплой
+## 1. Server Setup
 
 ```bash
-git clone <repo-url>
-cd Mafia_tg_bot
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER && newgrp docker
 
-cp .env.example .env
-nano .env
-
-docker compose up -d
-docker compose exec web python manage.py seed_cards
+# Clone the repo
+git clone <repo-url> Mafia_tg_bot && cd Mafia_tg_bot
 ```
 
-### .env для продакшену
+---
+
+## 2. BotFather Setup
+
+1. Open [@BotFather](https://t.me/BotFather) → `/newbot` → save the **bot token**
+2. `/setdomain` → set your domain (e.g. `game.example.com`) — required for Mini App to open
+3. The bot sets the menu button automatically on startup
+
+---
+
+## 3. HTTPS
+
+Telegram Mini App **requires HTTPS**. Choose one:
+
+**Option A — AWS ALB + ACM (recommended on EC2)**
+- Create an Application Load Balancer, attach a free ACM certificate
+- ALB listens on HTTPS:443, proxies to EC2:80 — no nginx changes needed
+
+**Option B — Certbot**
+```bash
+sudo apt install certbot -y
+docker compose stop nginx
+sudo certbot certonly --standalone -d your-domain.com
+```
+
+Then add to `nginx/nginx.conf`:
+```nginx
+listen 443 ssl;
+ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+```
+
+The `/etc/letsencrypt` volume mount is already in `docker-compose.yml`.
+
+---
+
+## 4. Configure `.env`
+
+```bash
+cp .env.example .env
+nano .env
+```
 
 ```env
-BOT_TOKEN=your_telegram_bot_token
-WEBAPP_URL=https://your-domain.com
-SECRET_KEY=your-secret-key-here
+BOT_TOKEN=1234567890:AAF...           # from BotFather
+WEBAPP_URL=https://your-domain.com    # public HTTPS URL
+
+SECRET_KEY=<random 50+ char string>   # generate: python3 -c "import secrets; print(secrets.token_urlsafe(50))"
 DEBUG=False
+
 DB_ENGINE=postgres
 DB_NAME=mafia
 DB_USER=postgres
-DB_PASSWORD=your_db_password
+DB_PASSWORD=<strong password>
 DB_HOST=db
 DB_PORT=5432
-ADMIN_IDS=871773167,979661127
+
+# Comma-separated Telegram IDs — these users see the iMafia admin button
+# Find your ID: message @userinfobot in Telegram
+ADMIN_IDS=your_telegram_id,another_admin_id
 ```
 
-### Деплой оновлень
+---
+
+## 5. Deploy
+
+Same command for both first run and all future updates:
 
 ```bash
 ./deploy.sh
 ```
 
-Скрипт виконує: `git pull` → `docker compose up -d --build` → чекає healthcheck → `seed_cards` → `nginx reload`.
+The script runs: `git pull` → `docker compose up -d --build` → waits for healthcheck → `seed_cards` → `nginx reload`.
 
-### Корисні команди
+Migrations and `collectstatic` run automatically inside the container on startup.
+
+Check everything is up:
+```bash
+docker compose ps
+# Expected: db, web, bot, nginx — all running
+```
+
+---
+
+## 6. Verify
 
 ```bash
-# Логи
-docker compose logs -f web
-docker compose logs -f bot
+curl -I https://your-domain.com     # should return 200 or 302
+docker compose logs bot             # should print "Бот запущен..."
+```
 
-# Переглянути події в адмінці
+Open the bot in Telegram → press **🕵️‍♂️ Играть** → Mini App should open.
+
+---
+
+## 7. Admin Panel
+
+Set admin Telegram IDs in `ADMIN_IDS` in `.env`. After changes:
+```bash
+docker compose up -d   # no rebuild needed for .env changes
+```
+
+| Where | Feature |
+|---|---|
+| Mini App → iMafia button | 16 game events: finish / cancel with score calculation |
+| Telegram bot | 📢 Broadcast button — send message/photo/video/GIF to all players |
+
+**Broadcast flow:**
+```
+Press 📢 Broadcast (or /broadcast) → send text or media → confirm ✅ → bot reports sent/failed count
+```
+
+---
+
+## 8. Logs & Backups
+
+**Event log** — `logs/events.log`:
+```bash
+tail -f logs/events.log
+```
+
+Written automatically on every event finish/cancel with admin name, cards, and points awarded.
+
+**DB backups** — `backups/`:
+- Auto-created on every score change
+- Format: `backup_MM_DD_HH_MM.sql`
+- Max 10 kept, oldest deleted automatically
+
+```bash
+ls -lh backups/
+
+# Restore
+docker compose exec -T db psql -U postgres mafia < backups/backup_06_05_14_30.sql
+```
+
+---
+
+## 9. Useful Commands
+
+```bash
+# ── Players ───────────────────────────────────────────────────────────
+# List all players by score
 docker compose exec web python manage.py shell -c \
-  "from game.models import EventResult; [print(r) for r in EventResult.objects.all()]"
+  "from game.models import Player; [print(p.username, p.score) for p in Player.objects.order_by('-score')]"
 
-# Додати паки гравцю
+# Set player score
+docker compose exec web python manage.py shell -c \
+  "from game.models import Player; p = Player.objects.get(username='USERNAME'); p.score = 100; p.save()"
+
+# Add packs to player
 docker compose exec web python manage.py shell -c \
   "from game.models import Player; p = Player.objects.get(username='USERNAME'); p.packs += 5; p.save()"
 
-# Переглянути всі гравці та їх бали
+# ── Events ────────────────────────────────────────────────────────────
+# List completed events
 docker compose exec web python manage.py shell -c \
-  "from game.models import Player; [print(p.username, p.score) for p in Player.objects.order_by('-score')]"
+  "from game.models import EventResult; [print(r) for r in EventResult.objects.all()]"
+
+# Reset all events
+docker compose exec web python manage.py shell -c \
+  "from game.models import EventResult; EventResult.objects.all().delete()"
+
+# ── Containers ────────────────────────────────────────────────────────
+docker compose ps
+docker compose logs -f web
+docker compose logs -f bot
+docker compose restart web
+
+# Shell access
+docker compose exec web bash
+docker compose exec db psql -U postgres mafia
 ```
 
 ---
 
-## Адмін-панель (iMafia)
+## 10. Adding New Cards
 
-Кнопка iMafia у навігації видима **тільки адмінам** (задається через `ADMIN_IDS` у `.env`).
-
-### Функції адмін-панелі (веб)
-
-- **16 ігрових подій** — кожна відкривається у деталь-панелі
-- **Чекбокси карточок** — відмічаєш які картки перемогли
-- **Лічильник × N** — скільки разів ця ситуація повторилась (мінімум 1)
-- **Картки з `fixed_count`** — лічильник заблокований на 1
-- **Завершити подію** — нараховує `card.score × count` балів гравцям у яких ця карта в слоті
-- **Скасувати розрахунок** — повертає всі нараховані бали, подія знову доступна
-- Завершені події **тускніють і перекреслюються** в сітці
-
-### Функції адмін-бота
-
-Адміни отримують кнопку **📢 Розсилка** у чаті з ботом.
-
-Розсилка підтримує: текст, фото, відео, GIF, документи (з підписом).
-
-```
-/broadcast  або  кнопка 📢 Розсилка
-→ надіслати повідомлення або медіа
-→ підтвердити: ✅ Надіслати всім / ❌ Скасувати
-→ бот повідомляє: надіслано N / помилки M
-```
-
----
-
-## Логи та бекапи
-
-### Логи подій
-
-Файл: `logs/events.log`
-
-Записується при кожному завершенні або скасуванні події:
-
-```
-────────────────────────────────────────────────
-[05.06.2026 14:30:15] ЗАВЕРШЕННЯ ПОДІЇ №3
-  Адмін: Rusliash (ID: 871773167)
-  Переможні картки:
-    • Видалення × 2
-    • Чиста перемога × 1
-  Нараховано балів:
-    • cubaodessa (ID: 979661127) → +12 балів
-  Всього отримали нарахування: 1 гравців
-────────────────────────────────────────────────
-```
-
-### Бекапи БД
-
-Директорія: `backups/`  
-Формат: `backup_MM_DD_HH_MM.sql` (або `.sqlite3` для локалки)  
-Максимум: **10 бекапів** — при 11-му найстаріший видаляється автоматично.
-
----
-
-## Карточки
-
-### Формат у `seed_cards.py`
+1. Add image to `game/static/game/img/carts/{slug}.webp` (WebP with transparent background)
+2. Add entry to `game/management/commands/seed_cards.py`:
 
 ```python
 CARDS = [
-    {'slug': 'executioner', 'name': 'Видалення',  'score': 3, 'fixed_count': False},
-    {'slug': 'dry_win',     'name': 'Чиста перемога', 'score': 6, 'fixed_count': True},
+    # ...existing cards...
+    {
+        'slug': 'new_card',      # unique latin identifier
+        'name': 'Card Name',     # shown in admin panel
+        'score': 4,              # points per occurrence
+        'fixed_count': False,    # True = counter locked at 1
+    },
 ]
 ```
 
-- `fixed_count: True` — лічильник в адмінці заблокований (завжди ×1)
-- `fixed_count: False` — адмін може збільшити лічильник
-
-### Як додати нову карточку
-
-1. Поклади зображення у `game/static/game/img/carts/{slug}.webp`
-2. Додай запис у `CARDS` в `seed_cards.py`
-3. Задеплой:
-
+3. Commit, push, deploy:
 ```bash
+git add . && git commit -m "feat: add new card" && git push
 ./deploy.sh
 ```
 
-### Структура статики
-
-```
-game/static/game/img/
-├── carts/          — зображення карточок ({slug}.webp)
-├── frames/         — рамки frame-bronze/silver/gold.webp
-├── pucks/          — іконки на сторінці паків
-├── button/         — кнопки навігації
-├── liderbord/      — аватари лідерборду
-├── bg.webp         — фон
-├── bg-frame.webp   — декоративна рамка
-├── divider.webp    — розділювач
-└── hummer.webp     — іконка молотка
-```
-
-> Всі зображення у форматі **WebP** (PNG не використовуються).
-
 ---
 
-## HTTPS (обов'язково для Telegram Mini App)
+## 11. Troubleshooting
 
-**Варіант 1 — AWS ALB + ACM** (рекомендовано):
-- SSL-термінація на балансувальнику, nginx слухає HTTP:80
-
-**Варіант 2 — Certbot на хості**:
 ```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
+# Web not starting
+docker compose logs web --tail=50
+
+# Bot not responding — check token in .env
+docker compose logs bot --tail=20
+
+# Migration error
+docker compose exec web python manage.py migrate --run-syncdb
+
+# Check DB connection
+docker compose exec web python manage.py shell -c \
+  "from django.db import connection; connection.ensure_connection(); print('DB OK')"
+
+# Full reset (WARNING: deletes all data)
+docker compose down -v && ./deploy.sh
 ```
