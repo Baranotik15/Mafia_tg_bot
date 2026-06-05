@@ -212,10 +212,19 @@ async def receive_promo_packs(message: Message, state: FSMContext):
         return
     data = await state.get_data()
     code = data['promo_code']
-    admin_id = message.from_user.id
+    admin_id   = message.from_user.id
+    admin_name = message.from_user.username or message.from_user.first_name or f'ID:{admin_id}'
     await sync_to_async(PromoCode.objects.create)(code=code, packs=packs, created_by=admin_id)
     await state.clear()
-    promo_logger.info(f'ПРОМОКОД СТВОРЕНО: {code} | {packs} паків | адмін ID: {admin_id}')
+    SEP = '─' * 48
+    promo_logger.info(
+        f'{SEP}\n'
+        f'ПРОМОКОД СТВОРЕНО\n'
+        f'  Адмін: {admin_name} (ID: {admin_id})\n'
+        f'  Код: {code}\n'
+        f'  Паків: {packs}\n'
+        f'{SEP}'
+    )
     pack_word = 'пак' if packs == 1 else ('паки' if packs < 5 else 'паків')
     await message.answer(
         f'✅ Промокод створено!\n\n'
