@@ -62,14 +62,6 @@
     text-decoration-color: rgba(201,162,39,0.7);
 }
 
-.event-number {
-    font-family: 'Palatino Linotype', Georgia, serif;
-    font-size: 11px;
-    color: rgba(201,162,39,0.4);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-}
-
 .event-name {
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 15px;

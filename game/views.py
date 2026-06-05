@@ -185,7 +185,6 @@ def finish_event(request):
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
 
-    # Лог
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     cards_lines = '\n'.join(
         f'    • {Card.objects.get(slug=w["slug"]).name} × {w["count"]}'
@@ -232,7 +231,6 @@ def cancel_event(request):
         Player.objects.filter(telegram_id=int(tid_str)).update(score=F('score') - points)
     result.delete()
 
-    # Лог
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     if awards:
         players_map = {str(p.telegram_id): p.username for p in Player.objects.filter(
