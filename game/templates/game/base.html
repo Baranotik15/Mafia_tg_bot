@@ -52,6 +52,7 @@
                 "{% static 'game/img/carts/for_distribution.webp' %}",
                 "{% static 'game/img/carts/triplet.webp' %}",
                 "{% static 'game/img/carts/third_wheel.webp' %}",
+                "{% static 'game/img/carts/Three_in_a_row.webp' %}",
             ];
             srcs.forEach(function(src) { (new Image()).src = src; });
         })();
@@ -71,6 +72,7 @@
             'for_distribution':   new Audio("{% static 'game/music/cart_sound/for_distribution.mp3' %}"),
             'triplet':            new Audio("{% static 'game/music/cart_sound/triplet.mp3' %}"),
             'third_wheel':        new Audio("{% static 'game/music/cart_sound/third_wheel.mp3' %}"),
+            'Three_in_a_row':     new Audio("{% static 'game/music/cart_sound/Three_in_a_row.mp3' %}"),
         };
         let _activeCardSound = null;
         function playCardSound(slug) {
