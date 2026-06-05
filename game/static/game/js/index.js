@@ -194,6 +194,8 @@
         const card = e.target.closest('.inv-card');
         if (!card || !blockCards.contains(card)) return;
 
+        e.preventDefault(); // prevent browser scroll prediction and synthetic clicks
+
         srcCard = card;
         startX  = e.touches[0].clientX;
         startY  = e.touches[0].clientY;
@@ -212,7 +214,7 @@
                 if (navigator.vibrate) navigator.vibrate(40);
             }, HOLD_MS);
         }, HOLD_MS);
-    }, { passive: true });
+    }, { passive: false });
 
     // ── Touch: move ──
     document.addEventListener('touchmove', e => {
