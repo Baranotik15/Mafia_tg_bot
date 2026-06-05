@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Card, Player
+from .models import Card, EventResult, Player
 
 
 def _validate_init_data(init_data: str) -> dict | None:
@@ -91,9 +91,14 @@ def index(request):
 
 def admin_events(request):
     cards = list(Card.objects.values('slug', 'name', 'score', 'fixed_count'))
+    completed = {
+        r.event_number: r.winners
+        for r in EventResult.objects.all()
+    }
     return render(request, 'game/admin_events.html', {
         'event_range': range(1, 17),
         'cards_json': json.dumps(cards, ensure_ascii=False),
+        'completed_json': json.dumps(completed, ensure_ascii=False),
     })
 
 
@@ -102,7 +107,12 @@ def admin_events(request):
 def finish_event(request):
     from django.db.models import Q
     data = json.loads(request.body)
+    event_num = data.get('event')
     winners = data.get('winners', [])
+
+    if EventResult.objects.filter(event_number=event_num).exists():
+        return JsonResponse({'error': 'already_completed'}, status=400)
+
     awarded = {}
     for item in winners:
         slug = item.get('slug')
@@ -117,7 +127,25 @@ def finish_event(request):
             player.score += points
             player.save(update_fields=['score'])
             awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
+
+    EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
     return JsonResponse({'ok': True, 'awarded': awarded})
+
+
+@csrf_exempt
+@require_POST
+def cancel_event(request):
+    from django.db.models import F
+    data = json.loads(request.body)
+    event_num = data.get('event')
+    try:
+        result = EventResult.objects.get(event_number=event_num)
+    except EventResult.DoesNotExist:
+        return JsonResponse({'error': 'not_found'}, status=404)
+    for tid_str, points in result.awards.items():
+        Player.objects.filter(telegram_id=int(tid_str)).update(score=F('score') - points)
+    result.delete()
+    return JsonResponse({'ok': True})
 
 
 def packs(request):

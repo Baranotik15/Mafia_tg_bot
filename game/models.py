@@ -12,6 +12,16 @@ class Card(models.Model):
         return f'[{self.slug}] {self.name or "—"} | очки: {self.score} | лічильник: {fixed}'
 
 
+class EventResult(models.Model):
+    event_number = models.IntegerField(unique=True)
+    winners      = models.JSONField(default=list)   # [{slug, count}, ...]
+    awards       = models.JSONField(default=dict)   # {str(telegram_id): points}
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Подія {self.event_number} | {self.completed_at:%Y-%m-%d %H:%M}'
+
+
 class Player(models.Model):
     telegram_id     = models.BigIntegerField(unique=True)
     username        = models.CharField(max_length=64)

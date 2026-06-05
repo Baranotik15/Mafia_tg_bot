@@ -27,12 +27,15 @@
     <div class="event-detail-body" id="eventDetailBody"></div>
     <div class="event-detail-footer">
         <button class="finish-event-btn" id="finishEventBtn">Закінчити подію</button>
+        <button class="cancel-event-btn" id="cancelEventBtn">Скасувати розрахунок</button>
     </div>
 </div>
 
 <script>
-    const CARDS = {{ cards_json|safe }};
-    const FINISH_URL = "{% url 'finish_event' %}";
+    const CARDS       = {{ cards_json|safe }};
+    const COMPLETED   = {{ completed_json|safe }};
+    const FINISH_URL  = "{% url 'finish_event' %}";
+    const CANCEL_URL  = "{% url 'cancel_event' %}";
 </script>
 {% endblock %}
 

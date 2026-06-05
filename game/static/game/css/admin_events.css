@@ -53,6 +53,15 @@
     border-color: rgba(201,162,39,0.7);
 }
 
+.event-card.completed {
+    opacity: 0.45;
+}
+
+.event-card.completed .event-name {
+    text-decoration: line-through;
+    text-decoration-color: rgba(201,162,39,0.7);
+}
+
 .event-number {
     font-family: 'Palatino Linotype', Georgia, serif;
     font-size: 11px;
@@ -254,4 +263,30 @@
     background: rgba(60,200,80,0.15);
     border-color: rgba(60,200,80,0.6);
     color: #4cd96a;
+}
+
+.cancel-event-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(200,60,60,0.5);
+    background: rgba(200,60,60,0.1);
+    color: #e07070;
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, border-color 0.15s;
+    display: none;
+}
+
+.cancel-event-btn:active:not(:disabled) {
+    background: rgba(200,60,60,0.25);
+    border-color: rgba(200,60,60,0.8);
+}
+
+.cancel-event-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
