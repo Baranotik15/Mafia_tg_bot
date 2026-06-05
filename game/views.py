@@ -24,6 +24,20 @@ BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
 MAX_BACKUPS = 10
 
 
+def _take_snapshot():
+    players = Player.objects.select_related('slot1', 'slot2', 'slot3').all()
+    slots = {}
+    for player in players:
+        s = [
+            player.slot1.slug if player.slot1 else None,
+            player.slot2.slug if player.slot2 else None,
+            player.slot3.slug if player.slot3 else None,
+        ]
+        if any(s):
+            slots[str(player.telegram_id)] = s
+    return slots
+
+
 def _make_backup():
     try:
         os.makedirs(BACKUP_DIR, exist_ok=True)
@@ -167,17 +181,7 @@ def start_event(request):
     if EventResult.objects.filter(event_number=event_num).exists():
         return JsonResponse({'error': 'already_completed'}, status=400)
 
-    players = Player.objects.select_related('slot1', 'slot2', 'slot3').all()
-    slots = {}
-    for player in players:
-        s = [
-            player.slot1.slug if player.slot1 else None,
-            player.slot2.slug if player.slot2 else None,
-            player.slot3.slug if player.slot3 else None,
-        ]
-        if any(s):
-            slots[str(player.telegram_id)] = s
-
+    slots = _take_snapshot()
     EventSnapshot.objects.create(event_number=event_num, slots=slots)
 
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
@@ -217,6 +221,32 @@ def cancel_start(request):
 
 @csrf_exempt
 @require_POST
+def update_snapshot(request):
+    admin = get_current_player(request)
+    data = json.loads(request.body)
+    event_num = data.get('event')
+
+    if EventResult.objects.filter(event_number=event_num).exists():
+        return JsonResponse({'error': 'already_completed'}, status=400)
+
+    slots = _take_snapshot()
+    EventSnapshot.objects.filter(event_number=event_num).delete()
+    EventSnapshot.objects.create(event_number=event_num, slots=slots)
+
+    admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
+    SEP = '─' * 48
+    logger.info(
+        f'{SEP}\n'
+        f'ОНОВЛЕННЯ ЗНІМКУ ПОДІЇ №{event_num}\n'
+        f'  Адмін: {admin_label}\n'
+        f'  Гравців зафіксовано: {len(slots)}\n'
+        f'{SEP}'
+    )
+    return JsonResponse({'ok': True, 'players_count': len(slots)})
+
+
+@csrf_exempt
+@require_POST
 def finish_event(request):
     from django.db.models import Q
     admin = get_current_player(request)
@@ -251,8 +281,6 @@ def finish_event(request):
             awarded[str(player.telegram_id)] = awarded.get(str(player.telegram_id), 0) + points
 
     EventResult.objects.create(event_number=event_num, winners=winners, awards=awarded)
-    if snapshot:
-        snapshot.delete()
 
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     cards_lines = '\n'.join(
@@ -299,7 +327,6 @@ def cancel_event(request):
     for tid_str, points in awards.items():
         Player.objects.filter(telegram_id=int(tid_str)).update(score=F('score') - points)
     result.delete()
-    EventSnapshot.objects.filter(event_number=event_num).delete()
 
     admin_label = f'{admin.username} (ID: {admin.telegram_id})' if admin else 'невідомий'
     if awards:
@@ -425,7 +452,7 @@ def redeem_promo(request):
     return JsonResponse({'ok': True, 'packs': packs, 'packs_total': player.packs})
 
 
-CARDS_PER_PACK = 3
+CARDS_PER_PACK = 4
 
 
 @csrf_exempt
@@ -443,7 +470,7 @@ def open_pack(request):
     player.packs -= 1
 
     if not available:
-        player.hammers += 3
+        player.hammers += 5
         player.save(update_fields=['packs', 'hammers'])
         return JsonResponse({
             'packs_left': player.packs,
@@ -455,7 +482,7 @@ def open_pack(request):
     drawn = random.sample(available, min(CARDS_PER_PACK, len(available)))
     player.collected_cards.add(*drawn)
     missing = CARDS_PER_PACK - len(drawn)
-    hammers_earned = 1 + missing
+    hammers_earned = 2 + missing
     player.hammers += hammers_earned
     player.save(update_fields=['packs', 'hammers'])
     return JsonResponse({

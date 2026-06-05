@@ -1,12 +1,13 @@
 (function () {
-    const detail         = document.getElementById('eventDetail');
-    const title          = document.getElementById('eventDetailTitle');
-    const body           = document.getElementById('eventDetailBody');
-    const backBtn        = document.getElementById('eventDetailBack');
-    const startBtn       = document.getElementById('startEventBtn');
-    const finBtn         = document.getElementById('finishEventBtn');
-    const cancelStartBtn = document.getElementById('cancelStartBtn');
-    const cancelBtn      = document.getElementById('cancelEventBtn');
+    const detail            = document.getElementById('eventDetail');
+    const title             = document.getElementById('eventDetailTitle');
+    const body              = document.getElementById('eventDetailBody');
+    const backBtn           = document.getElementById('eventDetailBack');
+    const startBtn          = document.getElementById('startEventBtn');
+    const finBtn            = document.getElementById('finishEventBtn');
+    const updateSnapBtn     = document.getElementById('updateSnapshotBtn');
+    const cancelStartBtn    = document.getElementById('cancelStartBtn');
+    const cancelBtn         = document.getElementById('cancelEventBtn');
 
     let currentEvent = null;
     const completed  = Object.assign({}, COMPLETED);
@@ -125,6 +126,7 @@
     function setButtons(state) {
         startBtn.style.display       = state === 'idle'      ? 'block' : 'none';
         finBtn.style.display         = state === 'started'   ? 'block' : 'none';
+        updateSnapBtn.style.display  = state === 'started'   ? 'block' : 'none';
         cancelStartBtn.style.display = state === 'started'   ? 'block' : 'none';
         cancelBtn.style.display      = state === 'completed' ? 'block' : 'none';
     }
@@ -194,6 +196,57 @@
                 startBtn.disabled = false;
                 startBtn.textContent = 'Старт події';
             });
+    });
+
+    // ── Update snapshot (choice: old / new) ──
+    updateSnapBtn.addEventListener('click', function () {
+        body.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'snapshot-choice';
+
+        const msg = document.createElement('div');
+        msg.className = 'snapshot-choice-msg';
+        msg.textContent = 'Який знімок використати\nдля розрахунку балів?';
+
+        const btnOld = document.createElement('button');
+        btnOld.className = 'snapshot-choice-btn snapshot-choice-btn--old';
+        btnOld.textContent = '📋 Використати старий';
+
+        const btnNew = document.createElement('button');
+        btnNew.className = 'snapshot-choice-btn snapshot-choice-btn--new';
+        btnNew.textContent = '🔄 Зробити новий знімок';
+
+        btnOld.addEventListener('click', function () {
+            buildRows(null, false);
+        });
+
+        btnNew.addEventListener('click', function () {
+            btnNew.disabled = true;
+            btnOld.disabled = true;
+            fetch(UPDATE_SNAPSHOT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event: currentEvent }),
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.ok) {
+                        buildRows(null, false);
+                    } else {
+                        btnNew.disabled = false;
+                        btnOld.disabled = false;
+                    }
+                })
+                .catch(function () {
+                    btnNew.disabled = false;
+                    btnOld.disabled = false;
+                });
+        });
+
+        wrap.appendChild(msg);
+        wrap.appendChild(btnOld);
+        wrap.appendChild(btnNew);
+        body.appendChild(wrap);
     });
 
     // ── Cancel start ──

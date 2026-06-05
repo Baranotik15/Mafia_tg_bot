@@ -192,16 +192,17 @@ async function animateCards(cards, hammersEarned) {
     animTitle.textContent = 'Нові карти!';
     animTitle.className   = 'pack-anim-title';
 
-    // Build triangle: 2 top + 1 bottom
+    // Build 2 rows: 2 top + 2 bottom
     const topRow = document.createElement('div');
     topRow.className = 'pack-tri-top';
     const botRow = document.createElement('div');
-    botRow.className = 'pack-tri-bot';
+    botRow.className = 'pack-tri-top';
 
     const cardEls = cards.map(c => makeCard(c));
     if (cardEls[0]) topRow.appendChild(cardEls[0]);
     if (cardEls[1]) topRow.appendChild(cardEls[1]);
     if (cardEls[2]) botRow.appendChild(cardEls[2]);
+    if (cardEls[3]) botRow.appendChild(cardEls[3]);
 
     animContent.appendChild(topRow);
     animContent.appendChild(botRow);
@@ -232,7 +233,7 @@ async function animateCards(cards, hammersEarned) {
     // Hammer reward
     const rewardEl = document.createElement('div');
     rewardEl.className = 'pack-hammer-reward';
-    const hammerWord = hammersEarned === 1 ? 'молоток' : 'молотки';
+    const hammerWord = hammersEarned === 1 ? 'якір' : (hammersEarned < 5 ? 'якорі' : 'якорів');
     rewardEl.innerHTML = `
         <img src="${HAMMER_URL}" class="pack-hammer-icon" alt="">
         <span class="pack-hammer-text">+${hammersEarned} ${hammerWord}</span>`;
@@ -245,17 +246,19 @@ async function animateCollectionFull() {
     animTitle.textContent = 'Колекція повна!';
     animTitle.className   = 'pack-anim-title pack-anim-title--gold';
 
-    // 3 hammer icons + ×3
+    // 5 anchor icons + ×5
     const fullHammers = document.createElement('div');
     fullHammers.className = 'pack-full-hammers';
     fullHammers.innerHTML = `
+        <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
+        <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
         <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
         <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">
         <img src="${HAMMER_URL}" class="pack-full-hammer" alt="">`;
 
     const x3El = document.createElement('div');
     x3El.className = 'pack-full-x3';
-    x3El.textContent = '×3';
+    x3El.textContent = '×5';
 
     animContent.appendChild(fullHammers);
     animContent.appendChild(x3El);
@@ -275,7 +278,7 @@ async function animateCollectionFull() {
     // Sub text
     const subEl = document.createElement('div');
     subEl.className = 'pack-full-sub';
-    subEl.textContent = '+3 молотки замість карт';
+    subEl.textContent = '+5 якорів замість карт';
     animReward.appendChild(subEl);
 
     await delay(380);
