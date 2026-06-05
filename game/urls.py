@@ -12,4 +12,5 @@ urlpatterns = [
     path('slot/clear/', views.clear_slot, name='clear_slot'),
     path('event/finish/', views.finish_event, name='finish_event'),
     path('event/cancel/', views.cancel_event, name='cancel_event'),
+    path('packs/promo/', views.redeem_promo, name='redeem_promo'),
 ]

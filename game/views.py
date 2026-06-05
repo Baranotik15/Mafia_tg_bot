@@ -18,7 +18,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Card, EventResult, Player
+from .models import Card, EventResult, Player, PromoCode
 
 BACKUP_DIR = os.path.join(settings.BASE_DIR, 'backups')
 MAX_BACKUPS = 10
@@ -329,6 +329,30 @@ def clear_slot(request):
     player.hammers -= 1
     player.save(update_fields=[f'slot{position}', 'hammers'])
     return JsonResponse({'ok': True, 'hammers': player.hammers})
+
+
+@csrf_exempt
+@require_POST
+def redeem_promo(request):
+    player = get_current_player(request)
+    if not player:
+        return JsonResponse({'error': 'player_not_found'}, status=404)
+    data = json.loads(request.body)
+    code = data.get('code', '').strip().upper()
+    if not code:
+        return JsonResponse({'error': 'no_code'}, status=400)
+    try:
+        promo = PromoCode.objects.get(code=code)
+    except PromoCode.DoesNotExist:
+        return JsonResponse({'error': 'invalid_code'}, status=404)
+    packs = promo.packs
+    player.packs += packs
+    player.save(update_fields=['packs'])
+    promo.delete()
+    logger.info(
+        f'ПРОМОКОД ВИКОРИСТАНО: {code} | {packs} паків → {player.username} (ID: {player.telegram_id})'
+    )
+    return JsonResponse({'ok': True, 'packs': packs, 'packs_total': player.packs})
 
 
 CARDS_PER_PACK = 3

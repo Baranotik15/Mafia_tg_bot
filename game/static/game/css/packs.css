@@ -598,3 +598,46 @@
 .pack-anim-close:active {
     background: rgba(201,162,39,0.28);
 }
+
+/* ── Promo input & messages ── */
+.promo-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(201,162,39,0.06);
+    border: 1px solid rgba(201,162,39,0.4);
+    border-radius: 8px;
+    color: #d4a84b;
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 2px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.promo-input::placeholder {
+    color: rgba(201,162,39,0.3);
+    letter-spacing: 0;
+}
+
+.promo-input:focus {
+    border-color: rgba(201,162,39,0.7);
+}
+
+.promo-msg {
+    min-height: 18px;
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 13px;
+    text-align: center;
+    color: #e07070;
+}
+
+.promo-msg.ok {
+    color: #4cd96a;
+}
+
+.promo-cancel-btn {
+    background: transparent;
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.35);
+}

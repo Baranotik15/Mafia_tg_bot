@@ -1,5 +1,75 @@
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// ── Promo code ──
+function initPromo() {
+    const promoOverlay = document.getElementById('pack-promo-overlay');
+    const promoInput   = document.getElementById('promo-input');
+    const promoMsg     = document.getElementById('promo-msg');
+    const promoSubmit  = document.getElementById('promo-submit');
+    const promoCancel  = document.getElementById('promo-cancel');
+    const packAddBtn   = document.querySelector('.pack-icon-btn[data-role="add"]');
+
+    function openPromo() {
+        promoInput.value = '';
+        promoMsg.textContent = '';
+        promoMsg.className = 'promo-msg';
+        promoOverlay.classList.add('active');
+        setTimeout(() => promoInput.focus(), 150);
+    }
+
+    function closePromo() {
+        promoOverlay.classList.remove('active');
+    }
+
+    packAddBtn.addEventListener('click', openPromo);
+    promoCancel.addEventListener('click', closePromo);
+    promoOverlay.addEventListener('click', e => {
+        if (e.target === promoOverlay) closePromo();
+    });
+    promoInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') promoSubmit.click();
+    });
+
+    promoSubmit.addEventListener('click', async () => {
+        const code = promoInput.value.trim().toUpperCase();
+        if (!code) { promoMsg.textContent = 'Введіть промокод'; return; }
+
+        promoSubmit.disabled = true;
+        promoMsg.textContent = '';
+        promoMsg.className = 'promo-msg';
+
+        try {
+            const resp = await fetch(PROMO_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code }),
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                const packs = data.packs;
+                const word = packs === 1 ? 'пак' : (packs < 5 ? 'паки' : 'паків');
+                promoMsg.textContent = `✅ +${packs} ${word} додано!`;
+                promoMsg.className = 'promo-msg ok';
+                countEl.textContent = 'x' + data.packs_total;
+                setTimeout(closePromo, 1400);
+            } else {
+                const msgs = {
+                    invalid_code:    'Промокод не знайдено або вже використано',
+                    no_code:         'Введіть промокод',
+                    player_not_found:'Гравець не знайдений',
+                };
+                promoMsg.textContent = msgs[data.error] || 'Помилка. Спробуйте ще раз.';
+            }
+        } catch {
+            promoMsg.textContent = 'Помилка мережі. Спробуйте ще раз.';
+        } finally {
+            promoSubmit.disabled = false;
+        }
+    });
+}
+
+initPromo();
+
 function showEnlargedCard(src) {
     const overlay = document.createElement('div');
     overlay.className = 'card-zoom-overlay';

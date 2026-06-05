@@ -9,8 +9,12 @@ load_dotenv()
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mafia_web.settings')
 django.setup()
 
+import logging
+
 from asgiref.sync import sync_to_async
-from game.models import Player
+from game.models import Player, PromoCode
+
+promo_logger = logging.getLogger('game.events')
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
@@ -44,12 +48,20 @@ class Broadcast(StatesGroup):
     waiting_confirm = State()
 
 
+class CreatePromo(StatesGroup):
+    waiting_code  = State()
+    waiting_packs = State()
+
+
 def _is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
 
 
 ADMIN_KEYBOARD = ReplyKeyboardMarkup(
-    keyboard=[[KeyboardButton(text='📢 Розсилка')]],
+    keyboard=[
+        [KeyboardButton(text='📢 Розсилка')],
+        [KeyboardButton(text='🎟 Промокод')],
+    ],
     resize_keyboard=True,
     one_time_keyboard=False,
 )
@@ -157,6 +169,61 @@ async def do_broadcast(callback: CallbackQuery, state: FSMContext):
 async def cancel_broadcast(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_text('❌ Розсилку скасовано.')
+
+
+@dp.message(F.text == '🎟 Промокод')
+@dp.message(Command('promo'))
+async def cmd_create_promo(message: Message, state: FSMContext):
+    if not _is_admin(message.from_user.id):
+        return
+    await state.set_state(CreatePromo.waiting_code)
+    await message.answer(
+        '🎟 <b>Створення промокоду</b>\n\nВведіть назву промокоду (без пробілів):',
+        parse_mode='HTML',
+    )
+
+
+@dp.message(CreatePromo.waiting_code)
+async def receive_promo_code(message: Message, state: FSMContext):
+    code = message.text.strip().upper()
+    if not code or ' ' in code:
+        await message.answer('❌ Код не може містити пробіли. Спробуйте ще раз:')
+        return
+    exists = await sync_to_async(PromoCode.objects.filter(code=code).exists)()
+    if exists:
+        await message.answer(f'❌ Промокод <code>{code}</code> вже існує. Введіть інший:', parse_mode='HTML')
+        return
+    await state.update_data(promo_code=code)
+    await state.set_state(CreatePromo.waiting_packs)
+    await message.answer(
+        f'✅ Код: <code>{code}</code>\n\nВведіть кількість паків (від 1 до 100):',
+        parse_mode='HTML',
+    )
+
+
+@dp.message(CreatePromo.waiting_packs)
+async def receive_promo_packs(message: Message, state: FSMContext):
+    try:
+        packs = int(message.text.strip())
+        if not (1 <= packs <= 100):
+            raise ValueError
+    except ValueError:
+        await message.answer('❌ Введіть число від 1 до 100:')
+        return
+    data = await state.get_data()
+    code = data['promo_code']
+    admin_id = message.from_user.id
+    await sync_to_async(PromoCode.objects.create)(code=code, packs=packs, created_by=admin_id)
+    await state.clear()
+    promo_logger.info(f'ПРОМОКОД СТВОРЕНО: {code} | {packs} паків | адмін ID: {admin_id}')
+    pack_word = 'пак' if packs == 1 else ('паки' if packs < 5 else 'паків')
+    await message.answer(
+        f'✅ Промокод створено!\n\n'
+        f'Код: <code>{code}</code>\n'
+        f'Паків: <b>{packs} {pack_word}</b>\n\n'
+        f'Гравці вводять його у розділі «Паки» в Mini App.',
+        parse_mode='HTML',
+    )
 
 
 async def main():

@@ -22,6 +22,16 @@ class EventResult(models.Model):
         return f'Подія {self.event_number} | {self.completed_at:%Y-%m-%d %H:%M}'
 
 
+class PromoCode(models.Model):
+    code       = models.CharField(max_length=64, unique=True)
+    packs      = models.IntegerField()
+    created_by = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.code} | {self.packs} паків | від {self.created_by}'
+
+
 class Player(models.Model):
     telegram_id     = models.BigIntegerField(unique=True)
     username        = models.CharField(max_length=64)

@@ -23,7 +23,7 @@
 
     <div class="packs-actions">
         <div class="packs-icons-row">
-            <img class="pack-icon-btn" src="{% static 'game/img/pucks/pack-add.webp' %}"      alt="Додати">
+            <img class="pack-icon-btn" data-role="add" src="{% static 'game/img/pucks/pack-add.webp' %}" alt="Промокод">
             <img class="pack-icon-btn" id="pack-info-btn" src="{% static 'game/img/pucks/pack-question.webp' %}" alt="Інфо">
         </div>
         <img class="pack-open-btn" id="pack-open-btn" src="{% static 'game/img/pucks/pack-open.webp' %}" alt="Відкрити пак">
@@ -33,6 +33,17 @@
 
 <!-- Flash effect -->
 <div class="pack-flash" id="pack-flash"></div>
+
+<!-- Promo overlay -->
+<div class="pack-overlay" id="pack-promo-overlay">
+    <div class="pack-overlay-box">
+        <div class="pack-overlay-title">🎟 Промокод</div>
+        <input class="promo-input" id="promo-input" type="text" placeholder="Введіть промокод" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <div class="promo-msg" id="promo-msg"></div>
+        <button class="pack-overlay-close" id="promo-submit">Активувати</button>
+        <button class="pack-overlay-close promo-cancel-btn" id="promo-cancel">Скасувати</button>
+    </div>
+</div>
 
 <!-- Info overlay -->
 <div class="pack-overlay" id="pack-info-overlay">
@@ -60,6 +71,7 @@
 {% block page_js %}
 <script>
     const OPEN_URL   = "{% url 'open_pack' %}";
+    const PROMO_URL  = "{% url 'redeem_promo' %}";
     const HAMMER_URL = "{% static 'game/img/hummer.webp' %}";
     const CARTS_URL  = "{% static 'game/img/carts/' %}";
 </script>
