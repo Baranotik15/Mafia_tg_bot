@@ -12,6 +12,7 @@ CARDS = [
     {'slug': 'finally',        'name': 'Нарешті',        'score': 5, 'fixed_count': True},
     {'slug': 'without_blast',     'name': 'Без баласту', 'score': 4, 'fixed_count': True},
     {'slug': 'shot_in_the_knee',  'name': 'Постріл у коліно', 'score': 5, 'fixed_count': False},
+    {'slug': 'for_distribution',  'name': 'Під Роздачу', 'score': 12, 'fixed_count': True},
 ]
 
 
