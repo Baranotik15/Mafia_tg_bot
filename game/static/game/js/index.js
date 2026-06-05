@@ -258,6 +258,7 @@
 
     // ── Desktop drag ──
     function attachDesktopDrag(card) {
+        card.draggable = true;
         card.addEventListener('dragstart', e => {
             srcCard = card;
             e.dataTransfer.effectAllowed = 'move';

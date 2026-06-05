@@ -214,7 +214,7 @@
 
         const btnNew = document.createElement('button');
         btnNew.className = 'snapshot-choice-btn snapshot-choice-btn--new';
-        btnNew.textContent = '🔄 Зробити новий знімок';
+        btnNew.textContent = '🔄 Запам\'ятати поточні карти';
 
         btnOld.addEventListener('click', function () {
             buildRows(null, false);

@@ -7,6 +7,10 @@ img {
     -webkit-user-drag: none;
 }
 
+img[src*="/dry_win"] {
+    mix-blend-mode: multiply;
+}
+
 html, body {
     width: 100%;
     height: 100%;
