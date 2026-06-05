@@ -48,6 +48,7 @@
                 "{% static 'game/img/carts/Texas_Massacre.webp' %}",
                 "{% static 'game/img/carts/finally.webp' %}",
                 "{% static 'game/img/carts/without_blast.webp' %}",
+                "{% static 'game/img/carts/shot_in_the_knee.webp' %}",
             ];
             srcs.forEach(function(src) { (new Image()).src = src; });
         })();
@@ -62,7 +63,8 @@
             'handsome':        new Audio("{% static 'game/music/cart_sound/handsome.mp3' %}"),
             'Texas_Massacre':  new Audio("{% static 'game/music/cart_sound/Texas_Massacre.mp3' %}"),
             'finally':         new Audio("{% static 'game/music/cart_sound/finally.mp3' %}"),
-            'without_blast':   new Audio("{% static 'game/music/cart_sound/without_blast.mp3' %}"),
+            'without_blast':      new Audio("{% static 'game/music/cart_sound/without_blast.mp3' %}"),
+            'shot_in_the_knee':   new Audio("{% static 'game/music/cart_sound/shot_in_the_knee.mp3' %}"),
         };
         let _activeCardSound = null;
         function playCardSound(slug) {
