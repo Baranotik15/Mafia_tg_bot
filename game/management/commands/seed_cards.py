@@ -5,7 +5,8 @@ CARDS = [
     {'slug': 'executioner',   'name': 'Видалення',       'score': 3, 'fixed_count': False},
     {'slug': 'dry_win',       'name': 'Чиста перемога',  'score': 6, 'fixed_count': True},
     {'slug': 'sheriff_kill',  'name': 'Вбивство шерифа', 'score': 2, 'fixed_count': True},
-    {'slug': 'three_on_three','name': '3в3',              'score': 5, 'fixed_count': True},
+    {'slug': 'three_on_three','name': '3в3',             'score': 5, 'fixed_count': True},
+    {'slug': 'know_the_pain', 'name': 'Пізнай біль',     'score': 5, 'fixed_count': False},
 ]
 
 
