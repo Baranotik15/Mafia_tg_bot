@@ -196,6 +196,15 @@
     pointer-events: none;
 }
 
+.collection-count {
+    flex-shrink: 0;
+    text-align: center;
+    font-family: 'Palatino Linotype', Georgia, serif;
+    font-size: 13px;
+    color: rgba(201,162,39,0.55);
+    margin: -4px 0 4px;
+}
+
 .block-cards {
     flex: 4;
     min-height: 0;

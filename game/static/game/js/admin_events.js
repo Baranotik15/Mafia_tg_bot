@@ -8,6 +8,21 @@
 
     let currentEvent = null;
     const completed  = Object.assign({}, COMPLETED);
+    let toastTimer   = null;
+
+    function showToast(msg) {
+        let toast = document.getElementById('evToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'evToast';
+            toast.className = 'ev-toast';
+            detail.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.classList.remove('visible'); }, 3000);
+    }
 
     function isCompleted(num) {
         return Object.prototype.hasOwnProperty.call(completed, num);
@@ -143,7 +158,10 @@
             });
         });
 
-        if (winners.length === 0) return;
+        if (winners.length === 0) {
+            showToast('Оберіть хоча б одну картку, яка перемогла у цій події');
+            return;
+        }
 
         finBtn.disabled = true;
 

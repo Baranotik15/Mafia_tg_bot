@@ -82,10 +82,14 @@ def index(request):
         if card:
             slotted_ids.add(card.id)
     inventory_cards = list(player.collected_cards.exclude(id__in=slotted_ids)) if player else []
+    total_cards = Card.objects.count()
+    owned_count = player.collected_cards.count() if player else 0
     return render(request, 'game/index.html', {
         'inventory_cards': inventory_cards,
         'slots': slots,
         'hammer_count': hammer_count,
+        'owned_count': owned_count,
+        'total_cards': total_cards,
     })
 
 
