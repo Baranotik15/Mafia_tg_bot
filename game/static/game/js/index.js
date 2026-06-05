@@ -264,8 +264,20 @@
 
     document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
+        const hammerOverlay = document.getElementById('hammerInfoOverlay');
+        if (hammerOverlay?.classList.contains('active')) { hammerOverlay.classList.remove('active'); return; }
         const zoom = document.querySelector('.card-zoom-overlay');
         if (zoom) { zoom.classList.remove('active'); setTimeout(() => zoom.remove(), 250); }
+    });
+
+    const hammerInfoBtn     = document.getElementById('hammerInfoBtn');
+    const hammerInfoOverlay = document.getElementById('hammerInfoOverlay');
+    const hammerInfoClose   = document.getElementById('hammerInfoClose');
+
+    hammerInfoBtn.addEventListener('click', () => hammerInfoOverlay.classList.add('active'));
+    hammerInfoClose.addEventListener('click', () => hammerInfoOverlay.classList.remove('active'));
+    hammerInfoOverlay.addEventListener('click', e => {
+        if (e.target === hammerInfoOverlay) hammerInfoOverlay.classList.remove('active');
     });
 
     // ── Desktop drag ──

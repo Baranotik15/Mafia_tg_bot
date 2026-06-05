@@ -45,11 +45,22 @@
     </div>
 
     <div class="slot-btn-wrap">
-        <button class="round-btn" disabled></button>
+        <button class="round-btn" id="hammerInfoBtn"></button>
         <span class="hammer-count" data-count="{{ hammer_count }}">x{{ hammer_count }}</span>
     </div>
 
     <div class="block-divider"></div>
+
+    <div class="hammer-info-overlay" id="hammerInfoOverlay">
+        <div class="hammer-info-box">
+            <div class="hammer-info-title">⚓ Якорі</div>
+            <div class="hammer-info-text">
+                Якорі потрібні для заміни активних карт у слотах на карти з колекції.<br><br>
+                Кожна заміна витрачає <strong style="color:#d4a84b">1 якір</strong>.
+            </div>
+            <button class="hammer-info-close" id="hammerInfoClose">Зрозуміло</button>
+        </div>
+    </div>
 
     <div class="collection-count">{{ owned_count }} / {{ total_cards }}</div>
 
