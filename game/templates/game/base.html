@@ -55,6 +55,7 @@
                 "{% static 'game/img/carts/Three_in_a_row.webp' %}",
                 "{% static 'game/img/carts/friendly_fire.webp' %}",
                 "{% static 'game/img/carts/wholesale_offer.webp' %}",
+                "{% static 'game/img/carts/stormed.webp' %}",
             ];
             srcs.forEach(function(src) { (new Image()).src = src; });
         })();
@@ -77,6 +78,7 @@
             'Three_in_a_row':     new Audio("{% static 'game/music/cart_sound/Three_in_a_row.mp3' %}"),
             'friendly_fire':      new Audio("{% static 'game/music/cart_sound/friendly_fire.mp3' %}"),
             'wholesale_offer':    new Audio("{% static 'game/music/cart_sound/wholesale_offer.mp3' %}"),
+            'stormed':            new Audio("{% static 'game/music/cart_sound/stormed.mp3' %}"),
         };
         let _activeCardSound = null;
         function playCardSound(slug) {

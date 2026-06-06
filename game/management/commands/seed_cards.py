@@ -18,6 +18,7 @@ CARDS = [
     {'slug': 'Three_in_a_row',    'name': 'Три в ряд',     'score': 1,   'fixed_count': True},
     {'slug': 'friendly_fire',     'name': 'Френдліфаер',   'score': 10,  'fixed_count': False},
     {'slug': 'wholesale_offer',   'name': 'Оптова пропозиція', 'score': 8,   'fixed_count': False},
+    {'slug': 'stormed',           'name': 'Штормило',      'score': 3,   'fixed_count': False},
 ]
 
 
