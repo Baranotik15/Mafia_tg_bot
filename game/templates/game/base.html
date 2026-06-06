@@ -7,6 +7,9 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'game/css/base.css' %}">
     {% block page_css %}{% endblock %}
+    <link rel="prefetch" href="{% url 'index' %}">
+    <link rel="prefetch" href="{% url 'packs' %}">
+    <link rel="prefetch" href="{% url 'leaders' %}">
     <style>
         :root {
             --bg-image: url("{% static 'game/img/bg.webp' %}");
@@ -37,7 +40,7 @@
     </div>
 
     <script>
-        (function() {
+        (window.requestIdleCallback || setTimeout)(function() {
             var srcs = [
                 "{% static 'game/img/carts/executioner.webp' %}",
                 "{% static 'game/img/carts/sanitary_day.webp' %}",
@@ -61,10 +64,12 @@
                 "{% static 'game/img/carts/on_the_teeth.webp' %}",
             ];
             srcs.forEach(function(src) { (new Image()).src = src; });
-        })();
+        });
     </script>
     <script>
-        const CARD_SOUNDS = {
+        var CARD_SOUNDS = {};
+        window.addEventListener('load', function() {
+            CARD_SOUNDS = {
             'sanitary_day':   new Audio("{% static 'game/music/cart_sound/sanitary_day.mp3' %}"),
             'no_chance':      new Audio("{% static 'game/music/cart_sound/no_chance.mp3' %}"),
             'executioner':    new Audio("{% static 'game/music/cart_sound/executioner.mp3' %}"),
@@ -85,7 +90,8 @@
             '3_finger_armor':     new Audio("{% static 'game/music/cart_sound/3_finger_armor.mp3' %}"),
             'lector':             new Audio("{% static 'game/music/cart_sound/lector.mp3' %}"),
             'on_the_teeth':       new Audio("{% static 'game/music/cart_sound/on_the_teeth.mp3' %}"),
-        };
+            };
+        });
         let _activeCardSound = null;
         function playCardSound(slug) {
             stopCardSound();
