@@ -18,7 +18,7 @@
     function momentumScroll() {
         if (Math.abs(scrollVel) < 0.5) { scrollVel = 0; return; }
         blockCards.scrollTop += scrollVel;
-        scrollVel *= 0.92;
+        scrollVel *= 0.85;
         scrollRaf = requestAnimationFrame(momentumScroll);
     }
 
@@ -244,8 +244,9 @@
             const deltaY = lastTouchY - t.clientY;
             lastTouchY = t.clientY;
             if (dy > 12) {
-                scrollVel = deltaY;
-                blockCards.scrollTop += deltaY;
+                const scrollDelta = deltaY * 0.5;
+                scrollVel = scrollDelta;
+                blockCards.scrollTop += scrollDelta;
                 reset();
                 scrollRaf = requestAnimationFrame(momentumScroll);
                 return;
