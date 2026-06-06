@@ -200,8 +200,6 @@
         const card = e.target.closest('.inv-card');
         if (!card || !blockCards.contains(card)) return;
 
-        e.preventDefault(); // prevent browser scroll prediction and synthetic clicks
-
         srcCard = card;
         startX  = e.touches[0].clientX;
         startY  = e.touches[0].clientY;
@@ -229,7 +227,7 @@
         const dy = Math.abs(t.clientY - startY);
 
         if (mode === 'holding') {
-            if (dy > 22) { reset(); return; }
+            if (dy > 8) { reset(); return; }
             e.preventDefault();
             return;
         }
