@@ -27,8 +27,7 @@ html, body {
     position: relative;
     padding: 16px 28px 0 28px;
     transform-origin: center center;
-    opacity: 0;
-    transition: opacity 0.1s ease;
+    opacity: 1;
 }
 
 .bg-frame-overlay {

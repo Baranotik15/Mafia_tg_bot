@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-visual">
     <title>{% block title %}Мафия{% endblock %}</title>
     {% load static %}
+    <link rel="preconnect" href="https://telegram.org">
+    <link rel="dns-prefetch" href="https://telegram.org">
     <link rel="stylesheet" href="{% static 'game/css/base.css' %}">
     {% block page_css %}{% endblock %}
     <link rel="prefetch" href="{% url 'index' %}">
