@@ -11,6 +11,7 @@
     let activeSlot  = null;
     let justDropped = false;
     let startX = 0, startY = 0, startT = 0;
+    let lastTouchY  = 0;
 
     // ── DOM ──
     const blockCards    = document.querySelector('.block-cards');
@@ -189,21 +190,18 @@
     document.addEventListener('touchstart', e => {
         if (mode !== 'idle') return;
 
-        // Tap on occupied slot → zoom
+        // If touching a slot, don't start card drag
         const slotTap = e.target.closest('.slot-wrap');
-        if (slotTap && slotTap.dataset.occupied === 'true') {
-            const img = slotTap.querySelector('.slot-img');
-            if (img) showZoomSrc(img.src);
-            return;
-        }
+        if (slotTap) return;
 
         const card = e.target.closest('.inv-card');
         if (!card || !blockCards.contains(card)) return;
 
-        srcCard = card;
-        startX  = e.touches[0].clientX;
-        startY  = e.touches[0].clientY;
-        startT  = Date.now();
+        srcCard    = card;
+        startX     = e.touches[0].clientX;
+        startY     = e.touches[0].clientY;
+        lastTouchY = startY;
+        startT     = Date.now();
         mode    = 'holding';
 
         holdTimer = setTimeout(() => {
@@ -227,12 +225,19 @@
         const dy = Math.abs(t.clientY - startY);
 
         if (mode === 'holding') {
-            if (dy > 8) { reset(); return; }
+            const deltaY = lastTouchY - t.clientY;
+            lastTouchY = t.clientY;
+            if (dy > 12) {
+                blockCards.scrollTop += deltaY;
+                reset();
+                return;
+            }
             e.preventDefault();
             return;
         }
         if (mode === 'dragging') {
             e.preventDefault();
+            lastTouchY = t.clientY;
             moveGhost(t.clientX, t.clientY);
             activeSlot = slotAt(t.clientX, t.clientY);
             highlightSlot(activeSlot);
@@ -241,7 +246,17 @@
 
     // ── Touch: end ──
     document.addEventListener('touchend', e => {
-        if (mode === 'idle') return;
+        // Tap on occupied slot → zoom (handled here, not in touchstart)
+        if (mode === 'idle') {
+            const t = e.changedTouches[0];
+            const dt = Date.now() - (startT || 0);
+            const slotTap = e.target.closest('.slot-wrap');
+            if (slotTap && slotTap.dataset.occupied === 'true' && dt < 300) {
+                const img = slotTap.querySelector('.slot-img');
+                if (img) showZoomSrc(img.src);
+            }
+            return;
+        }
         const t  = e.changedTouches[0];
         const dt = Date.now() - startT;
         const dx = Math.abs(t.clientX - startX);
