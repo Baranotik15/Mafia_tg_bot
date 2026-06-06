@@ -244,7 +244,7 @@
             const deltaY = lastTouchY - t.clientY;
             lastTouchY = t.clientY;
             if (dy > 12) {
-                const scrollDelta = deltaY * 0.5;
+                const scrollDelta = deltaY * 0.75;
                 scrollVel = scrollDelta;
                 blockCards.scrollTop += scrollDelta;
                 reset();
