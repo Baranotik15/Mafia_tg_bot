@@ -3,7 +3,7 @@ from game.models import Card
 
 CARDS = [
     {'slug': 'executioner',   'name': 'Видалення',       'score': 3, 'fixed_count': False},
-    {'slug': 'dry_win',       'name': 'Чиста перемога',  'score': 6, 'fixed_count': True},
+    {'slug': 'sanitary_day',  'name': 'Санітарний день', 'score': 8, 'fixed_count': True},
     {'slug': 'burned',        'name': 'Спалився',        'score': 2, 'fixed_count': True},
     {'slug': 'no_chance',     'name': 'Безшансова',      'score': 5, 'fixed_count': True},
     {'slug': 'know_the_pain', 'name': 'Пізнай біль',     'score': 5, 'fixed_count': False},
