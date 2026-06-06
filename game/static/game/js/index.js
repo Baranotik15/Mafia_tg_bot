@@ -12,6 +12,20 @@
     let justDropped = false;
     let startX = 0, startY = 0, startT = 0;
     let lastTouchY  = 0;
+    let scrollVel   = 0;
+    let scrollRaf   = null;
+
+    function momentumScroll() {
+        if (Math.abs(scrollVel) < 0.5) { scrollVel = 0; return; }
+        blockCards.scrollTop += scrollVel;
+        scrollVel *= 0.92;
+        scrollRaf = requestAnimationFrame(momentumScroll);
+    }
+
+    function stopMomentum() {
+        cancelAnimationFrame(scrollRaf);
+        scrollVel = 0;
+    }
 
     // ── DOM ──
     const blockCards    = document.querySelector('.block-cards');
@@ -197,6 +211,8 @@
         const card = e.target.closest('.inv-card');
         if (!card || !blockCards.contains(card)) return;
 
+        stopMomentum();
+        e.preventDefault();
         srcCard    = card;
         startX     = e.touches[0].clientX;
         startY     = e.touches[0].clientY;
@@ -228,8 +244,10 @@
             const deltaY = lastTouchY - t.clientY;
             lastTouchY = t.clientY;
             if (dy > 12) {
+                scrollVel = deltaY;
                 blockCards.scrollTop += deltaY;
                 reset();
+                scrollRaf = requestAnimationFrame(momentumScroll);
                 return;
             }
             e.preventDefault();
