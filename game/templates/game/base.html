@@ -57,6 +57,7 @@
                 "{% static 'game/img/carts/wholesale_offer.webp' %}",
                 "{% static 'game/img/carts/stormed.webp' %}",
                 "{% static 'game/img/carts/3_finger_armor.webp' %}",
+                "{% static 'game/img/carts/lector.webp' %}",
             ];
             srcs.forEach(function(src) { (new Image()).src = src; });
         })();
@@ -81,6 +82,7 @@
             'wholesale_offer':    new Audio("{% static 'game/music/cart_sound/wholesale_offer.mp3' %}"),
             'stormed':            new Audio("{% static 'game/music/cart_sound/stormed.mp3' %}"),
             '3_finger_armor':     new Audio("{% static 'game/music/cart_sound/3_finger_armor.mp3' %}"),
+            'lector':             new Audio("{% static 'game/music/cart_sound/lector.mp3' %}"),
         };
         let _activeCardSound = null;
         function playCardSound(slug) {
