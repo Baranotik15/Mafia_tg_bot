@@ -61,6 +61,7 @@ ADMIN_KEYBOARD = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text='📢 Розсилка')],
         [KeyboardButton(text='🎟 Промокод')],
+        [KeyboardButton(text='👥 Список Игроков')],
     ],
     resize_keyboard=True,
     one_time_keyboard=False,
@@ -179,6 +180,33 @@ async def do_broadcast(callback: CallbackQuery, state: FSMContext):
 async def cancel_broadcast(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_text('❌ Розсилку скасовано.')
+
+
+@dp.message(F.text == '👥 Список Игроков')
+@dp.message(Command('players'))
+async def cmd_players(message: Message):
+    if not _is_admin(message.from_user.id):
+        return
+
+    @sync_to_async
+    def get_players():
+        return list(Player.objects.order_by('-score').values('username', 'score', 'packs'))
+
+    players = await get_players()
+    if not players:
+        await message.answer('Гравців ще немає.')
+        return
+
+    lines = ['<b>👥 Список гравців:</b>\n']
+    for i, p in enumerate(players, 1):
+        name = p['username'] or '—'
+        lines.append(f'{i}. {name} — <b>{p["score"]}</b> ⭐  |  паків: {p["packs"]}')
+
+    text = '\n'.join(lines)
+    if len(text) > 4096:
+        text = text[:4090] + '\n...'
+
+    await message.answer(text, parse_mode='HTML')
 
 
 @dp.message(F.text == '🎟 Промокод')
