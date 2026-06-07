@@ -53,6 +53,11 @@ class CreatePromo(StatesGroup):
     waiting_packs = State()
 
 
+class DeletePlayer(StatesGroup):
+    waiting_number  = State()
+    waiting_confirm = State()
+
+
 def _is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS
 
@@ -62,6 +67,7 @@ ADMIN_KEYBOARD = ReplyKeyboardMarkup(
         [KeyboardButton(text='📢 Розсилка')],
         [KeyboardButton(text='🎟 Промокод')],
         [KeyboardButton(text='👥 Список Игроков')],
+        [KeyboardButton(text='🗑 Видалити гравця')],
     ],
     resize_keyboard=True,
     one_time_keyboard=False,
@@ -242,6 +248,77 @@ async def cmd_backfill_names(message: Message):
         f'✅ Готово!\nОновлено: <b>{ok}</b>\nНе вдалось: <b>{failed}</b>',
         parse_mode='HTML',
     )
+
+
+@dp.message(F.text == '🗑 Видалити гравця')
+@dp.message(Command('delete_player'))
+async def cmd_delete_player(message: Message, state: FSMContext):
+    if not _is_admin(message.from_user.id):
+        return
+
+    @sync_to_async
+    def get_players():
+        return list(Player.objects.order_by('-score').values('username', 'first_name', 'telegram_id'))
+
+    players = await get_players()
+    if not players:
+        await message.answer('Гравців ще немає.')
+        return
+
+    await state.update_data(players=players)
+    await state.set_state(DeletePlayer.waiting_number)
+    await message.answer(
+        f'🗑 <b>Видалення гравця</b>\n\nВведіть порядковий номер гравця зі списку (1–{len(players)}):',
+        parse_mode='HTML',
+    )
+
+
+@dp.message(DeletePlayer.waiting_number)
+async def delete_player_number(message: Message, state: FSMContext):
+    data = await state.get_data()
+    players = data['players']
+    try:
+        num = int(message.text.strip())
+        if not (1 <= num <= len(players)):
+            raise ValueError
+    except ValueError:
+        await message.answer(f'❌ Введіть число від 1 до {len(players)}:')
+        return
+
+    player = players[num - 1]
+    name = player['first_name'] or player['username'] or '—'
+    await state.update_data(delete_num=num, delete_tid=player['telegram_id'], delete_name=name)
+    await state.set_state(DeletePlayer.waiting_confirm)
+    await message.answer(
+        f'⚠️ Ви точно хочете видалити гравця?\n\n'
+        f'#{num} <b>{name}</b>\n'
+        f'Telegram ID: <code>{player["telegram_id"]}</code>\n\n'
+        f'Введіть <b>видалити</b> для підтвердження або будь-що інше для скасування.',
+        parse_mode='HTML',
+    )
+
+
+@dp.message(DeletePlayer.waiting_confirm)
+async def delete_player_confirm(message: Message, state: FSMContext):
+    data = await state.get_data()
+    await state.clear()
+
+    if message.text.strip().lower() != 'видалити':
+        await message.answer('❌ Видалення скасовано.')
+        return
+
+    tid  = data['delete_tid']
+    name = data['delete_name']
+    num  = data['delete_num']
+
+    deleted, _ = await sync_to_async(Player.objects.filter(telegram_id=tid).delete)()
+    if deleted:
+        await message.answer(
+            f'✅ Гравця <b>#{num} {name}</b> (ID: <code>{tid}</code>) видалено.',
+            parse_mode='HTML',
+        )
+    else:
+        await message.answer('❌ Гравця не знайдено, можливо вже видалений.')
 
 
 @dp.message(F.text == '🎟 Промокод')
