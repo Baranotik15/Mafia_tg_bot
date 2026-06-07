@@ -190,7 +190,7 @@ async def cmd_players(message: Message):
 
     @sync_to_async
     def get_players():
-        return list(Player.objects.order_by('-score').values('username', 'score', 'packs'))
+        return list(Player.objects.order_by('-score').values('username', 'first_name', 'score', 'packs'))
 
     players = await get_players()
     if not players:
@@ -199,7 +199,7 @@ async def cmd_players(message: Message):
 
     lines = ['<b>👥 Список гравців:</b>\n']
     for i, p in enumerate(players, 1):
-        name = p['username'] or '—'
+        name = p['first_name'] or p['username'] or '—'
         lines.append(f'{i}. {name} — <b>{p["score"]}</b> ⭐  |  паків: {p["packs"]}')
 
     text = '\n'.join(lines)
@@ -207,6 +207,41 @@ async def cmd_players(message: Message):
         text = text[:4090] + '\n...'
 
     await message.answer(text, parse_mode='HTML')
+
+
+@dp.message(Command('backfill_names'))
+async def cmd_backfill_names(message: Message):
+    if not _is_admin(message.from_user.id):
+        return
+
+    @sync_to_async
+    def get_empty():
+        return list(Player.objects.filter(first_name='').values_list('telegram_id', flat=True))
+
+    @sync_to_async
+    def save_name(telegram_id, first_name):
+        Player.objects.filter(telegram_id=telegram_id).update(first_name=first_name)
+
+    ids = await get_empty()
+    if not ids:
+        await message.answer('✅ Всі гравці вже мають імена.')
+        return
+
+    await message.answer(f'⏳ Заповнюю імена для {len(ids)} гравців...')
+    ok = failed = 0
+    for tid in ids:
+        try:
+            chat = await bot.get_chat(tid)
+            if chat.first_name:
+                await save_name(tid, chat.first_name)
+                ok += 1
+        except Exception:
+            failed += 1
+
+    await message.answer(
+        f'✅ Готово!\nОновлено: <b>{ok}</b>\nНе вдалось: <b>{failed}</b>',
+        parse_mode='HTML',
+    )
 
 
 @dp.message(F.text == '🎟 Промокод')

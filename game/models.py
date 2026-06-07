@@ -45,6 +45,7 @@ class PromoCode(models.Model):
 class Player(models.Model):
     telegram_id     = models.BigIntegerField(unique=True)
     username        = models.CharField(max_length=64)
+    first_name      = models.CharField(max_length=64, blank=True, default='')
     score           = models.IntegerField(default=0)
     packs           = models.IntegerField(default=1)
     hammers         = models.IntegerField(default=5)

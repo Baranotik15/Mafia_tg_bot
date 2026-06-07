@@ -112,14 +112,21 @@ def auth(request):
     if not telegram_id:
         return JsonResponse({'ok': False, 'error': 'no_user_id'}, status=400)
 
-    username = user_data.get('username') or user_data.get('first_name', f'user_{telegram_id}')
+    username   = user_data.get('username') or user_data.get('first_name', f'user_{telegram_id}')
+    first_name = user_data.get('first_name', '')
     player, _ = Player.objects.get_or_create(
         telegram_id=telegram_id,
-        defaults={'username': username},
+        defaults={'username': username, 'first_name': first_name},
     )
+    update_fields = []
     if player.username != username:
         player.username = username
-        player.save(update_fields=['username'])
+        update_fields.append('username')
+    if first_name and player.first_name != first_name:
+        player.first_name = first_name
+        update_fields.append('first_name')
+    if update_fields:
+        player.save(update_fields=update_fields)
 
     new_session = request.session.get('telegram_id') != telegram_id
     request.session['telegram_id'] = telegram_id
