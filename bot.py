@@ -205,8 +205,9 @@ async def cmd_players(message: Message):
 
     lines = ['<b>👥 Список гравців:</b>\n']
     for i, p in enumerate(players, 1):
-        name = p['first_name'] or p['username'] or '—'
-        lines.append(f'{i}. {name} — <b>{p["score"]}</b> ⭐  |  паків: {p["packs"]}')
+        first = p['first_name'] or '—'
+        user  = f'@{p["username"]}' if p['username'] else '—'
+        lines.append(f'{i}. {first} | {user} — <b>{p["score"]}</b> ⭐  |  паків: {p["packs"]}')
 
     text = '\n'.join(lines)
     if len(text) > 4096:
